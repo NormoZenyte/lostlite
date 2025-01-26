@@ -399,85 +399,125 @@ class UIManager {
 
     private initializeSidebar(): void {
         // Get DOM elements
-        const toggleSidebar = document.querySelector('.toggle-sidebar');
         const listContainer = document.querySelector('.list-container');
+        const contentWrapper = document.querySelector('.section-content-wrapper');
 
-        // Helper function to expand sidebar
-        const expandSidebar = () => {
-            if (listContainer?.classList.contains('collapsed')) {
-                listContainer.classList.remove('collapsed');
-                const sidebarToggle = document.querySelector('.toggle-sidebar');
-                sidebarToggle?.classList.remove('fa-chevron-right');
-                sidebarToggle?.classList.add('fa-chevron-left');
-            }
+        // Helper function to save section state
+        const saveSectionState = (sectionId: string, isExpanded: boolean) => {
+            localStorage.setItem(`section_${sectionId}_expanded`, isExpanded.toString());
         };
 
-        // Sidebar toggle handler
-        toggleSidebar?.addEventListener('click', (event: Event) => {
-            const target = event.currentTarget as HTMLElement;
-            listContainer?.classList.toggle('collapsed');
-            target.classList.toggle('fa-chevron-right');
-            target.classList.toggle('fa-chevron-left');
+        // Helper function to update content wrapper visibility
+        const updateContentWrapperVisibility = () => {
+            const hasActiveSection = document.querySelector('.section-header.active') !== null;
+            contentWrapper?.classList.toggle('has-active-section', hasActiveSection);
+            listContainer?.classList.toggle('has-active-section', hasActiveSection);
+        };
 
-            // If collapsing, close all sections
-            if (listContainer?.classList.contains('collapsed')) {
-                const allSectionContents = document.querySelectorAll('.section-content');
-                allSectionContents.forEach((content) => {
-                    content.classList.remove('expanded');
-                    const section = content.closest('.plugin-section');
-                    const sectionId = section?.getAttribute('data-section') || '';
-                    localStorage.setItem(`section_${sectionId}_expanded`, 'false');
-                });
-            }
+        // Section header click handler
+        const sectionHeaders = document.querySelectorAll('.section-header');
+        sectionHeaders.forEach((header: Element) => {
+            header.addEventListener('click', () => {
+                const sectionId = header.getAttribute('data-section');
+                if (sectionId) {
+                    const content = document.querySelector(`.section-content[data-section="${sectionId}"]`);
+                    
+                    // Close all other sections first
+                    const allSectionContents = document.querySelectorAll('.section-content');
+                    const allSectionHeaders = document.querySelectorAll('.section-header');
+                    allSectionContents.forEach((otherContent) => {
+                        if (otherContent !== content) {
+                            otherContent.classList.remove('expanded');
+                            const otherSectionId = otherContent.getAttribute('data-section');
+                            if (otherSectionId) {
+                                saveSectionState(otherSectionId, false);
+                            }
+                        }
+                    });
+                    allSectionHeaders.forEach((otherHeader) => {
+                        if (otherHeader !== header) {
+                            otherHeader.classList.remove('active');
+                        }
+                    });
+
+                    // Toggle this section
+                    content?.classList.toggle('expanded');
+                    header.classList.toggle('active');
+                    saveSectionState(sectionId, content?.classList.contains('expanded') || false);
+                    
+                    // Update content wrapper visibility
+                    updateContentWrapperVisibility();
+                }
+            });
         });
 
         // Plugin item click handler
         const pluginItems = document.querySelectorAll('.plugin-item');
         pluginItems.forEach((item: Element) => {
             item.addEventListener('click', () => {
-                expandSidebar();
+                // Expand the section if it's collapsed
+                const sectionId = item.closest('.section-content')?.getAttribute('data-section');
+                if (sectionId) {
+                    const header = document.querySelector(`.section-header[data-section="${sectionId}"]`);
+                    const content = document.querySelector(`.section-content[data-section="${sectionId}"]`);
+                    
+                    // Close all other sections first
+                    const allSectionContents = document.querySelectorAll('.section-content');
+                    const allSectionHeaders = document.querySelectorAll('.section-header');
+                    allSectionContents.forEach((otherContent) => {
+                        if (otherContent !== content) {
+                            otherContent.classList.remove('expanded');
+                            const otherSectionId = otherContent.getAttribute('data-section');
+                            if (otherSectionId) {
+                                saveSectionState(otherSectionId, false);
+                            }
+                        }
+                    });
+                    allSectionHeaders.forEach((otherHeader) => {
+                        if (otherHeader !== header) {
+                            otherHeader.classList.remove('active');
+                        }
+                    });
 
-                // Also expand the section if it's collapsed
-                const section = item.closest('.plugin-section');
-                const content = section?.querySelector('.section-content');
-                if (content && !content.classList.contains('expanded')) {
-                    content.classList.add('expanded');
-                    // Save state to localStorage
-                    const sectionId = section?.getAttribute('data-section') || '';
-                    localStorage.setItem(`section_${sectionId}_expanded`, 'true');
+                    // Expand this section
+                    if (content && !content.classList.contains('expanded')) {
+                        content.classList.add('expanded');
+                        header?.classList.add('active');
+                        saveSectionState(sectionId, true);
+                    }
+                    
+                    // Update content wrapper visibility
+                    updateContentWrapperVisibility();
                 }
             });
         });
 
-        // Section expand/collapse handler
-        const sectionHeaders = document.querySelectorAll('.section-header');
-        sectionHeaders.forEach((header: Element) => {
-            header.addEventListener('click', () => {
-                expandSidebar();
-                
-                const section = header.closest('.plugin-section');
-                const content = section?.querySelector('.section-content');
-                content?.classList.toggle('expanded');
-                
-                // Save state to localStorage
-                if (section && content) {
-                    const sectionId = section.getAttribute('data-section') || '';
-                    localStorage.setItem(`section_${sectionId}_expanded`, content.classList.contains('expanded').toString());
+        // Restore section states from localStorage - only expand the last active section
+        const sections = document.querySelectorAll('.section-header');
+        let lastExpandedSectionId: string | null = null;
+        sections.forEach((header: Element) => {
+            const sectionId = header.getAttribute('data-section');
+            if (sectionId) {
+                const isExpanded = localStorage.getItem(`section_${sectionId}_expanded`) === 'true';
+                if (isExpanded) {
+                    lastExpandedSectionId = sectionId;
                 }
-            });
-        });
-
-        // Restore section states from localStorage
-        const sections = document.querySelectorAll('.plugin-section');
-        sections.forEach((section: Element) => {
-            const sectionId = section.getAttribute('data-section') || '';
-            const content = section.querySelector('.section-content');
-            const isExpanded = localStorage.getItem(`section_${sectionId}_expanded`) === 'true';
-            
-            if (content && isExpanded) {
-                content.classList.add('expanded');
             }
         });
+
+        if (lastExpandedSectionId) {
+            const header = document.querySelector(`.section-header[data-section="${lastExpandedSectionId}"]`);
+            const content = document.querySelector(`.section-content[data-section="${lastExpandedSectionId}"]`);
+            if (header && content) {
+                content.classList.add('expanded');
+                header.classList.add('active');
+                // Update content wrapper visibility
+                updateContentWrapperVisibility();
+            }
+        } else {
+            // Initially hide content wrapper if no section is active
+            updateContentWrapperVisibility();
+        }
     }
 }
 
