@@ -5,6 +5,7 @@ import Packet from '../io/Packet';
 import Hashable from '../datastruct/Hashable';
 import JavaRandom from '../util/JavaRandom';
 import Colors from './Colors';
+import {Renderer} from '../renderer/Renderer';
 
 export default class PixFont extends Hashable {
     static readonly CHARSET: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!"£$%^&*()-_=+[{]};:\'@#~,<.>/?\\| ';
@@ -216,11 +217,19 @@ export default class PixFont extends Hashable {
             } else {
                 const c: number = PixFont.CHARCODESET[str.charCodeAt(i)];
                 if (c !== 94) {
-                    if (shadowed) {
-                        this.drawCharAlpha(x + this.charOffsetX[c] + 1, offY + this.charOffsetY[c] + 1, this.charMaskWidth[c], this.charMaskHeight[c], Colors.BLACK, 192, this.charMask[c]);
-                    }
+                    if (Renderer.renderer) {
+                        if (shadowed) {
+                            this.drawChar(this.charMask[c], x + this.charOffsetX[c] + 1, offY + this.charOffsetY[c] + 1, this.charMaskWidth[c], this.charMaskHeight[c], Colors.BLACK);
+                        }
 
-                    this.drawCharAlpha(x + this.charOffsetX[c], offY + this.charOffsetY[c], this.charMaskWidth[c], this.charMaskHeight[c], color, rand, this.charMask[c]);
+                        this.drawChar(this.charMask[c], x + this.charOffsetX[c], offY + this.charOffsetY[c], this.charMaskWidth[c], this.charMaskHeight[c], color);
+                    } else {
+                        if (shadowed) {
+                            this.drawCharAlpha(x + this.charOffsetX[c] + 1, offY + this.charOffsetY[c] + 1, this.charMaskWidth[c], this.charMaskHeight[c], Colors.BLACK, 192, this.charMask[c]);
+                        }
+
+                        this.drawCharAlpha(x + this.charOffsetX[c], offY + this.charOffsetY[c], this.charMaskWidth[c], this.charMaskHeight[c], color, rand, this.charMask[c]);
+                    }
                 }
 
                 x += this.charAdvance[c];
