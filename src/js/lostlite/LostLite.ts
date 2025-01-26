@@ -51,7 +51,7 @@ class UIManager {
             if (!Renderer.renderer) {
                 this.game.addMessage(0, 'Failed to enable webgpu', '');
                 this.gpuToggle.checked = false;
-                this.onGpuChange();
+                await this.onGpuChange();
             }
         } catch (e) {
             if (e instanceof Error) {
@@ -59,7 +59,7 @@ class UIManager {
             }
             console.error('Failed creating webgpu renderer', e);
             this.gpuToggle.checked = false;
-            this.onGpuChange();
+            await this.onGpuChange();
         }
         console.log('Finished turning on gpu.')
     }
