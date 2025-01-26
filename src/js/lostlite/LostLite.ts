@@ -421,7 +421,7 @@ class UIManager {
                 const sectionId = header.getAttribute('data-section');
                 if (sectionId) {
                     const content = document.querySelector(`.section-content[data-section="${sectionId}"]`);
-                    
+
                     // Close all other sections first
                     const allSectionContents = document.querySelectorAll('.section-content');
                     const allSectionHeaders = document.querySelectorAll('.section-header');
@@ -444,7 +444,7 @@ class UIManager {
                     content?.classList.toggle('expanded');
                     header.classList.toggle('active');
                     saveSectionState(sectionId, content?.classList.contains('expanded') || false);
-                    
+
                     // Update content wrapper visibility
                     updateContentWrapperVisibility();
                 }
@@ -460,7 +460,7 @@ class UIManager {
                 if (sectionId) {
                     const header = document.querySelector(`.section-header[data-section="${sectionId}"]`);
                     const content = document.querySelector(`.section-content[data-section="${sectionId}"]`);
-                    
+
                     // Close all other sections first
                     const allSectionContents = document.querySelectorAll('.section-content');
                     const allSectionHeaders = document.querySelectorAll('.section-header');
@@ -485,7 +485,7 @@ class UIManager {
                         header?.classList.add('active');
                         saveSectionState(sectionId, true);
                     }
-                    
+
                     // Update content wrapper visibility
                     updateContentWrapperVisibility();
                 }
@@ -523,16 +523,48 @@ class UIManager {
 
 export const LostLite = async (): Promise<void> => {
     console.log(`Lost Lite Launching w/ user client - release #${Client.clientversion}`);
-    await setupConfiguration();
-    console.log('Configuration has been setup. Launching game.');
 
-    const game: Game = new Game();
+    // Initialize loading UI
+    const loadingOverlay = document.querySelector('.loading-overlay') as HTMLElement;
+    const loadingProgressBar = document.getElementById('loading-progress-bar') as HTMLElement;
+    const loadingText = document.querySelector('.loading-text') as HTMLElement;
+    let progress = 0;
 
-    let uiManager: UIManager | null = null;
-    game.onLoginScreenLoaded = (): void => {
-        uiManager = new UIManager(game);
+    const updateLoadingProgress = (text: string, newProgress: number) => {
+        progress = newProgress;
+        loadingProgressBar.style.width = `${progress}%`;
+        loadingText.textContent = text;
+        console.log(`Loading: ${text} (${progress}%)`); // Debug loading progress
     };
 
+    try {
+        // Setup configuration (33%)
+        updateLoadingProgress('Setting up configuration...', 0);
+    await setupConfiguration();
+        updateLoadingProgress('Configuration loaded', 33);
+    console.log('Configuration has been setup. Launching game.');
+
+        // Initialize game (66%)
+        updateLoadingProgress('Initializing game engine...', 33);
+    const game: Game = new Game();
+        updateLoadingProgress('Game engine initialized', 66);
+
+    let uiManager: UIManager | null = null;
+
+        // Setup login screen (100%)
+    game.onLoginScreenLoaded = (): void => {
+            updateLoadingProgress('Loading interface...', 66);
+        uiManager = new UIManager(game);
+            updateLoadingProgress('LostLite Loaded!', 100);
+
+            // Hide loading overlay
+            loadingOverlay.classList.add('fade-out');
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 300);
+        };
+
+        // World loading doesn't affect loading screen since it happens after login
     game.onWorldLoaded = async (): Promise<void> => {
         await uiManager?.initializeToggles2();
         uiManager?.test();
@@ -549,9 +581,13 @@ export const LostLite = async (): Promise<void> => {
         uiManager?.onLogout();
     };
 
-    game.run().then((): void => {
+        await game.run();
         console.log('Finished.');
-    });
+    } catch (error) {
+        console.error('Error during initialization:', error);
+        loadingText.textContent = 'Error loading game. Please refresh the page.';
+        loadingText.style.color = '#ff4444';
+    }
 };
 
 await LostLite();
