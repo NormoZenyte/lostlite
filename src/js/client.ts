@@ -83,6 +83,8 @@ export abstract class Client extends GameShell {
     static oplogic8: number = 0;
     static oplogic9: number = 0;
 
+    public loadedCallback: () => void = (): void => {};
+
     static setHighMemory = (): void => {
         World3D.lowMemory = false;
         Draw3D.lowMemory = false;
@@ -296,7 +298,7 @@ export abstract class Client extends GameShell {
     protected privateMessageCount: number = 0;
     protected splitPrivateChat: number = 0;
     protected chatEffects: number = 0;
-    protected chatTyped: string = '';
+    chatTyped: string = '';
     protected viewportHoveredInterfaceIndex: number = 0;
     protected sidebarHoveredInterfaceIndex: number = 0;
     protected chatHoveredInterfaceIndex: number = 0;

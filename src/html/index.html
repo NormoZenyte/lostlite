@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>RuneScape 2</title>
@@ -8,6 +9,7 @@
         <meta name="viewport" content="width=device-width, initial-scale = 0.86, maximum-scale=3.0, minimum-scale=0.86">
 
         <link rel="icon" type="image/x-icon" href="favicon.ico">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
         <style>
             body {
@@ -15,12 +17,12 @@
                 padding: 0;
                 color: #fff;
                 background-color: #000;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
 
             #canvas {
                 display: block;
                 position: absolute;
-
                 z-index: -1;
             }
 
@@ -29,15 +31,26 @@
                 margin: 0 auto;
                 width: 789px;
                 height: 532px;
+                display: flex;
+                flex-direction: row;
+                transition: all 0.3s ease;
+            }
+
+            #canvas-container.resizable {
+                width: 100%;
+                height: 100%;
+            }
+
+            #canvas-container.resizable canvas {
+                width: 100%;
+                height: 100%;
             }
 
             #canvas-overlay {
                 position: absolute;
                 z-index: 10;
-
                 width: 100%;
                 height: 100%;
-
                 touch-action: none;
                 -webkit-touch-callout: none;
                 -webkit-user-select: none;
@@ -48,12 +61,335 @@
                 outline: none;
                 -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
             }
+
+            .lostlite-container {
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+            }
+
+            .main-content {
+                display: flex;
+                flex-direction: row;
+                flex-grow: 1;
+            }
+
+            .list-container {
+                width: 250px;
+                background-color: #232323;
+                border-left: 1px solid #444;
+                display: flex;
+                flex-direction: column;
+                transition: all 0.3s ease;
+                overflow: hidden;
+            }
+
+            .list-container.collapsed {
+                width: 50px;
+            }
+
+            .list-container.collapsed .sidebar-title,
+            .list-container.collapsed .plugin-item-content span,
+            .list-container.collapsed .toggle-switch,
+            .list-container.collapsed .category-header i.fa-chevron-down,
+            .list-container.collapsed .category-header i.fa-chevron-up {
+                display: none;
+            }
+
+            .list-container.collapsed .plugin-item {
+                padding: 10px 15px;
+                justify-content: center;
+            }
+
+            .list-container.collapsed .plugin-item-content {
+                justify-content: center;
+            }
+
+            .list-container.collapsed .plugin-item i {
+                margin-right: 0;
+            }
+
+            .list-container.collapsed .category-header {
+                justify-content: center;
+                padding: 12px;
+            }
+
+            .sidebar-header {
+                padding: 15px;
+                background-color: #171717;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid #444;
+                min-height: 20px;
+            }
+
+            .sidebar-title {
+                font-size: 16px;
+                font-weight: bold;
+            }
+
+            .toggle-sidebar {
+                cursor: pointer;
+                padding: 5px;
+            }
+
+            .plugin-list {
+                overflow-y: auto;
+                flex-grow: 1;
+            }
+
+            .plugin-category {
+                border-bottom: 1px solid #444;
+            }
+
+            .category-header {
+                padding: 12px 15px;
+                background-color: #2a2a2a;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .category-header i {
+                margin-right: 10px;
+                width: 20px;
+                text-align: center;
+            }
+
+            .plugin-item {
+                padding: 10px 15px 10px 45px;
+                cursor: pointer;
+                transition: background-color 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .plugin-item:hover {
+                background-color: #2d2d2d;
+            }
+
+            .plugin-item.active {
+                background-color: #3a3a3a;
+            }
+
+            /* Custom scrollbar */
+            .plugin-list::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .plugin-list::-webkit-scrollbar-track {
+                background: #232323;
+            }
+
+            .plugin-list::-webkit-scrollbar-thumb {
+                background: #444;
+                border-radius: 4px;
+            }
+
+            .plugin-item i {
+                margin-right: 10px;
+                width: 16px;
+                text-align: center;
+            }
+
+            .toggle-switch {
+                position: relative;
+                display: inline-block;
+                width: 40px;
+                height: 20px;
+                flex-shrink: 0;
+            }
+
+            .toggle-switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+            .toggle-slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #444;
+                transition: .4s;
+                border-radius: 20px;
+            }
+
+            .toggle-slider:before {
+                position: absolute;
+                content: "";
+                height: 16px;
+                width: 16px;
+                left: 2px;
+                bottom: 2px;
+                background-color: white;
+                transition: .4s;
+                border-radius: 50%;
+            }
+
+            input:checked + .toggle-slider {
+                background-color: #2196F3;
+            }
+
+            input:checked + .toggle-slider:before {
+                transform: translateX(20px);
+            }
+
+            .plugin-item-content {
+                display: flex;
+                align-items: center;
+                min-width: 0;
+                flex: 1;
+            }
+
+            /* Top bar styles */
+            .top-bar {
+                background-color: #171717;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                padding: 0 10px;
+                border-bottom: 1px solid #444;
+                font-size: 14px;
+            }
+
+            .top-bar-left {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .top-bar-right {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                margin-left: auto;
+            }
+
+            .top-bar-item {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                color: #bbb;
+                cursor: pointer;
+                padding: 5px;
+                transition: color 0.2s;
+            }
+
+            .top-bar-item:hover {
+                color: #fff;
+            }
+
+            .top-bar-item i {
+                font-size: 12px;
+            }
+
+            .world-selector {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                background-color: #2a2a2a;
+                padding: 3px 8px;
+                border-radius: 3px;
+                font-size: 12px;
+            }
+
+            .fps-counter {
+                color: #00ff00;
+                font-family: monospace;
+            }
         </style>
     </head>
     <body>
-        <div id="canvas-container">
-            <div id="canvas-overlay"></div>
-            <canvas id="canvas" width="789" height="532"></canvas>
+        <div class="lostlite-container">
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <div class="top-bar-item">
+                        <i class="fas fa-home"></i>
+                        <span>LostLite</span>
+                    </div>
+                    <div class="world-selector">
+                        <i class="fas fa-globe"></i>
+                        <span>World 1</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="top-bar-right">
+                    <div class="top-bar-item fps-counter">
+                        <span>50.0 FPS</span>
+                    </div>
+                    <div class="top-bar-item">
+                        <i class="fas fa-expand"></i>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="resizable-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="main-content">
+                <div id="canvas-container">
+                    <div id="canvas-overlay"></div>
+                    <canvas id="canvas" width="789" height="532"></canvas>
+                </div>
+                <div class="list-container">
+                    <div class="sidebar-header">
+                        <span class="sidebar-title">LostLite</span>
+                        <i class="fas fa-chevron-right toggle-sidebar"></i>
+                    </div>
+                    <div class="plugin-list">
+                        <div class="plugin-category">
+                            <div class="category-header">
+                                <div class="plugin-item-content">
+                                    <i class="fas fa-puzzle-piece"></i>
+                                    <span>Plugins</span>
+                                </div>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="plugin-item">
+                                <div class="plugin-item-content">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>True Tile</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="true-tile-toggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="plugin-item">
+                                <div class="plugin-item-content">
+                                    <i class="fas fa-microchip"></i>
+                                    <span>GPU</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="gpu-toggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="plugin-item">
+                                <div class="plugin-item-content">
+                                    <i class="fas fa-border-all"></i>
+                                    <span>Tile Marker</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="tile-marker-toggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <script>
+            // All JavaScript functionality has been moved to LostLite.ts
+        </script>
     </body>
 </html>

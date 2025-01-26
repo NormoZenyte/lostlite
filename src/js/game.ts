@@ -72,7 +72,7 @@ import {RendererWebGPU} from './jagex2/renderer/webgpu/RendererWebGPU';
 import Plugins from './plugin/Plugins';
 
 // noinspection JSSuspiciousNameCombination
-class Game extends Client {
+export class Game extends Client {
     load = async (): Promise<void> => {
         if (this.alreadyStarted) {
             this.errorStarted = true;
@@ -331,11 +331,15 @@ class Game extends Client {
             WordFilter.unpack(wordenc);
             this.initializeLevelExperience();
 
-            try {
-                Renderer.renderer = await RendererWebGPU.init(canvasContainer, this.width, this.height);
-            } catch (e) {
-                console.error('Failed creating webgpu renderer', e);
+            if (!!this.loadedCallback) {
+                console.log('Loaded callback firing.');
+                this.loadedCallback();
             }
+            // try {
+            //     Renderer.renderer = await RendererWebGPU.init(canvasContainer, this.width, this.height);
+            // } catch (e) {
+            //     console.error('Failed creating webgpu renderer', e);
+            // }
         } catch (err) {
             console.error(err);
             this.errorLoading = true;
@@ -6197,7 +6201,7 @@ class Game extends Client {
         }
     };
 
-    private addMessage = (type: number, text: string, sender: string): void => {
+    addMessage = (type: number, text: string, sender: string): void => {
         if (type === 0 && this.stickyChatInterfaceId !== -1) {
             this.modalMessage = text;
             this.mouseClickButton = 0;
@@ -9519,6 +9523,3 @@ class Game extends Client {
     };
 }
 
-console.log(`RS2 user client - release #${Client.clientversion}`);
-await setupConfiguration();
-new Game().run().then((): void => {});

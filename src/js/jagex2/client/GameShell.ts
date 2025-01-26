@@ -29,7 +29,7 @@ export default abstract class GameShell {
     protected deltime: number = 20;
     protected mindel: number = 1;
     protected otim: number[] = [];
-    protected fps: number = 0;
+    fps: number = 0;
     protected fpos: number = 0;
     protected frameTime: number[] = [];
     protected redrawScreen: boolean = true;
@@ -37,7 +37,7 @@ export default abstract class GameShell {
     protected tfps: number = 50; // custom
     protected hasFocus: boolean = true; // mapview applet
 
-    protected ingame: boolean = false;
+    ingame: boolean = false;
 
     protected idleCycles: number = Date.now();
     protected mouseButton: number = 0;
@@ -89,11 +89,11 @@ export default abstract class GameShell {
     abstract getChatInterfaceId(): number;
     abstract getViewportInterfaceId(): number;
 
-    protected get width(): number {
+    get width(): number {
         return canvas.width;
     }
 
-    protected get height(): number {
+    get height(): number {
         return canvas.height;
     }
 
@@ -348,7 +348,7 @@ export default abstract class GameShell {
 
     // ----
 
-    private onkeydown = (e: KeyboardEvent): void => {
+    onkeydown = (e: KeyboardEvent): void => {
         const key: string = e.key;
 
         this.idleCycles = Date.now();

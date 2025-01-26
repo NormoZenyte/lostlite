@@ -24,7 +24,7 @@ const htmlPlugins = pages.map(name => {
 
 const config = {
     entry: {
-        index: './src/js/game.ts',
+        index: './src/js/lostlite/LostLite.ts',
         // playground: './src/js/playground.js',
         // viewer: './src/js/viewer.ts',
         // mesanim: './src/js/mesanim.ts',
