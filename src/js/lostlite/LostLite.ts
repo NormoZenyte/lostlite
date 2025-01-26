@@ -18,6 +18,7 @@ class UIManager {
     private gpuToggle: HTMLInputElement;
     private tileMarkerToggle: HTMLInputElement;
     private resizableToggle: HTMLInputElement;
+    private debugToggle: HTMLInputElement;
     private canvasContainer: HTMLElement;
     private canvas: HTMLCanvasElement;
 
@@ -27,6 +28,7 @@ class UIManager {
         this.gpuToggle = document.getElementById('gpu-toggle') as HTMLInputElement;
         this.tileMarkerToggle = document.getElementById('tile-marker-toggle') as HTMLInputElement;
         this.resizableToggle = document.getElementById('resizable-toggle') as HTMLInputElement;
+        this.debugToggle = document.getElementById('debug-toggle') as HTMLInputElement;
         this.canvasContainer = document.getElementById('canvas-container') as HTMLElement;
         this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
@@ -69,6 +71,93 @@ class UIManager {
             await this.enableGPURenderer();
         }
 
+        // // Initialize debug state
+        // if (localStorage.getItem('debugEnabled') === 'true') {
+        //     this.debugToggle.checked = true;
+        //     this.debugToggle.closest('.plugin-item')?.classList.add('active');
+        // }
+
+        // // Initialize other toggle states
+        // if (localStorage.getItem('trueTileEnabled') === 'true') {
+        //     this.trueTileToggle.checked = true;
+        //     this.trueTileToggle.closest('.plugin-item')?.classList.add('active');
+        // }
+        // if (localStorage.getItem('tileMarkerEnabled') === 'true') {
+        //     this.tileMarkerToggle.checked = true;
+        //     this.tileMarkerToggle.closest('.plugin-item')?.classList.add('active');
+        // }
+
+        // Initialize resizable state
+        if (localStorage.getItem('resizableEnabled') === 'true') {
+            this.resizableToggle.checked = true;
+            this.canvasContainer.classList.add('resizable');
+            this.updateCanvasSize();
+        }
+    }
+
+    commands: (() => Promise<void>)[] = [];
+
+    async test(): Promise<void> {
+        const loadDebug = async (): Promise<void> => {
+            if (this.game.ingame && this.debugToggle.checked) {
+                this.game.chatTyped = '::debug';
+                this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
+            }
+            return Promise.resolve();
+        }
+
+        const loadTrueTile = async (): Promise<void> => {
+            if (this.game.ingame && this.trueTileToggle.checked) {
+                console.log('Sending key command')
+                this.game.chatTyped = '::entityoverlay';
+                this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
+            }
+            return Promise.resolve();
+        }
+
+        this.commands.push(loadDebug);
+        this.commands.push(loadTrueTile);
+    }
+
+    async initializeToggles2(): Promise<void> {
+        // Debug toggle
+        this.debugToggle.addEventListener('change', () => {
+            const pluginItem = this.debugToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.debugToggle.checked);
+            localStorage.setItem('debugEnabled', this.debugToggle.checked.toString());
+
+            if (this.game.ingame) {
+                this.game.chatTyped = '::debug';
+                this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
+            }
+        });
+
+        // True Tile toggle
+        this.trueTileToggle.addEventListener('change', () => {
+            const pluginItem = this.trueTileToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.trueTileToggle.checked);
+            localStorage.setItem('trueTileEnabled', this.trueTileToggle.checked.toString());
+
+            if (this.game.ingame) {
+                console.log('Sending key command')
+                this.game.chatTyped = '::entityoverlay';
+                this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
+            }
+        });
+
+        // Tile Marker toggle
+        this.tileMarkerToggle.addEventListener('change', () => {
+            const pluginItem = this.tileMarkerToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.tileMarkerToggle.checked);
+            localStorage.setItem('tileMarkerEnabled', this.tileMarkerToggle.checked.toString());
+        });
+
+        // Initialize debug state
+        if (localStorage.getItem('debugEnabled') === 'true') {
+            this.debugToggle.checked = true;
+            this.debugToggle.closest('.plugin-item')?.classList.add('active');
+        }
+
         // Initialize other toggle states
         if (localStorage.getItem('trueTileEnabled') === 'true') {
             this.trueTileToggle.checked = true;
@@ -77,13 +166,6 @@ class UIManager {
         if (localStorage.getItem('tileMarkerEnabled') === 'true') {
             this.tileMarkerToggle.checked = true;
             this.tileMarkerToggle.closest('.plugin-item')?.classList.add('active');
-        }
-
-        // Initialize resizable state
-        if (localStorage.getItem('resizableEnabled') === 'true') {
-            this.resizableToggle.checked = true;
-            this.canvasContainer.classList.add('resizable');
-            this.updateCanvasSize();
         }
     }
 
@@ -109,20 +191,6 @@ class UIManager {
                     this.disableGPURenderer();
                 }
             }
-        });
-
-        // True Tile toggle
-        this.trueTileToggle.addEventListener('change', () => {
-            const pluginItem = this.trueTileToggle.closest('.plugin-item');
-            pluginItem?.classList.toggle('active', this.trueTileToggle.checked);
-            localStorage.setItem('trueTileEnabled', this.trueTileToggle.checked.toString());
-        });
-
-        // Tile Marker toggle
-        this.tileMarkerToggle.addEventListener('change', () => {
-            const pluginItem = this.tileMarkerToggle.closest('.plugin-item');
-            pluginItem?.classList.toggle('active', this.tileMarkerToggle.checked);
-            localStorage.setItem('tileMarkerEnabled', this.tileMarkerToggle.checked.toString());
         });
 
         // Resizable toggle
@@ -200,7 +268,23 @@ export const LostLite = async (): Promise<void> => {
 
     const game: Game = new Game();
 
-    game.loadedCallback = (): UIManager => new UIManager(game);
+    let uiManager: UIManager | null = null;
+    game.onLoginScreenLoaded = (): void => {
+        uiManager = new UIManager(game);
+    }
+
+    game.onWorldLoaded = async (): Promise<void> => {
+        console.log(`On world loaded. ${uiManager?.initializeToggles2}`);
+        await uiManager?.initializeToggles2();
+        uiManager?.test();
+    }
+
+    game.onTick = async (): Promise<void> => {
+        const polled: (() => Promise<void>) | undefined = uiManager?.commands?.pop();
+        if (polled) {
+            await polled();
+        }
+    }
 
     game.run().then((): void => {
         console.log('Finished.')

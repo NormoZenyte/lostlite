@@ -330,11 +330,7 @@ export class Game extends Client {
             World3D.init(512, 334, 500, 800, distance);
             WordFilter.unpack(wordenc);
             this.initializeLevelExperience();
-
-            if (!!this.loadedCallback) {
-                console.log('Loaded callback firing.');
-                this.loadedCallback();
-            }
+            this?.onLoginScreenLoaded();
             // try {
             //     Renderer.renderer = await RendererWebGPU.init(canvasContainer, this.width, this.height);
             // } catch (e) {
@@ -351,6 +347,7 @@ export class Game extends Client {
             return;
         }
         this.loopCycle++;
+        await this.onTick();
         if (this.ingame) {
             await this.updateGame();
         } else {
@@ -1947,7 +1944,7 @@ export class Game extends Client {
                 }
             }
 
-            if (Client.showDebug) {
+            if (Client.showTrueTile) {
                 // true tile overlay
                 if (entity.pathLength > 0 || entity.forceMoveEndCycle >= this.loopCycle || entity.forceMoveStartCycle > this.loopCycle) {
                     const halfUnit: number = 64 * entity.size;
@@ -1956,7 +1953,9 @@ export class Game extends Client {
 
                 // local tile overlay
                 this.debugDrawTileOverlay(entity.x, entity.z, this.currentLevel, entity.size, 0x666666, false);
+            }
 
+            if (Client.showDebug) {
                 let offsetY: number = 0;
                 this.projectFromEntity(entity, entity.height + 30);
 
@@ -4181,6 +4180,7 @@ export class Game extends Client {
                     }
 
                     if (this.viewportInterfaceId !== -1 && this.viewportInterfaceId === this.reportAbuseInterfaceID) {
+                        console.log('viewportInterfaceId');
                         if (key === 8 && this.reportAbuseInput.length > 0) {
                             this.reportAbuseInput = this.reportAbuseInput.substring(0, this.reportAbuseInput.length - 1);
                         }
@@ -4188,6 +4188,7 @@ export class Game extends Client {
                     }
 
                     if (this.showSocialInput) {
+                        console.log('showSocialInput');
                         if (key >= 32 && key <= 122 && this.socialInput.length < 80) {
                             this.socialInput = this.socialInput + String.fromCharCode(key);
                             this.redrawChatback = true;
@@ -4246,6 +4247,7 @@ export class Game extends Client {
                             }
                         }
                     } else if (this.chatbackInputOpen) {
+                        console.log('chatbackInputOpen');
                         if (key >= 48 && key <= 57 && this.chatbackInput.length < 10) {
                             this.chatbackInput = this.chatbackInput + String.fromCharCode(key);
                             this.redrawChatback = true;
@@ -4272,6 +4274,7 @@ export class Game extends Client {
                             this.redrawChatback = true;
                         }
                     } else if (this.chatInterfaceId === -1) {
+                        console.log('chatInterfaceId');
                         if (key >= 32 && key <= 122 && this.chatTyped.length < 80) {
                             this.chatTyped = this.chatTyped + String.fromCharCode(key);
                             this.redrawChatback = true;
@@ -4296,6 +4299,9 @@ export class Game extends Client {
                                         }
                                     }
                                 }
+                            } else if (this.chatTyped === '::entityoverlay') {
+                                Client.showTrueTile = !Client.showTrueTile;
+                                console.log('coock');
                             } else if (this.chatTyped === '::debug') {
                                 Client.showDebug = !Client.showDebug;
                             } else if (this.chatTyped === '::gpu') {
@@ -6049,6 +6055,8 @@ export class Game extends Client {
                     this.sceneState = 2;
                     World.levelBuilt = this.currentLevel;
                     this.buildScene();
+                    console.log('FDuck');
+                    await this?.onWorldLoaded();
                 }
                 if (Client.lowMemory && this.sceneState === 2 && World.levelBuilt !== this.currentLevel) {
                     this.areaViewport?.bind();
