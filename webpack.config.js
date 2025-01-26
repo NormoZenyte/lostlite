@@ -55,7 +55,7 @@ const config = {
 
     output: {
         path: path.resolve(__dirname, 'public'),
-        publicPath: process.env.CI ? '/Client2/' : '/'
+        publicPath: process.env.CI ? '/lostlite/' : '/'
     },
 
     devServer: {
