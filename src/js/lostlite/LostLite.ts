@@ -50,12 +50,16 @@ class UIManager {
             Renderer.renderer = await RendererWebGPU.init(canvasContainer, this.game.width, this.game.height);
             if (!Renderer.renderer) {
                 this.game.addMessage(0, 'Failed to enable webgpu', '');
+                this.gpuToggle.checked = false;
+                this.onGpuChange();
             }
         } catch (e) {
             if (e instanceof Error) {
                 this.game.addMessage(0, 'Error enabling webgpu: ' + e.message, '');
             }
             console.error('Failed creating webgpu renderer', e);
+            this.gpuToggle.checked = false;
+            this.onGpuChange();
         }
         console.log('Finished turning on gpu.')
     }
@@ -206,28 +210,32 @@ class UIManager {
         }
     }
 
+    private async onGpuChange(): Promise<void> {
+        const pluginItem = this.gpuToggle.closest('.plugin-item');
+        pluginItem?.classList.toggle('active', this.gpuToggle.checked);
+        localStorage.setItem('gpuEnabled', this.gpuToggle.checked.toString());
+
+        if (this.gpuToggle.checked) {
+            if (this.game.ingame) {
+                this.game.chatTyped = '::gpu';
+                this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
+            } else {
+                await this.enableGPURenderer();
+            }
+        } else {
+            if (this.game.ingame) {
+                this.game.chatTyped = '::gpu';
+                this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
+            } else {
+                this.disableGPURenderer();
+            }
+        }
+    }
+
     private setupEventListeners(): void {
         // GPU toggle
         this.gpuToggle.addEventListener('change', async () => {
-            const pluginItem = this.gpuToggle.closest('.plugin-item');
-            pluginItem?.classList.toggle('active', this.gpuToggle.checked);
-            localStorage.setItem('gpuEnabled', this.gpuToggle.checked.toString());
-
-            if (this.gpuToggle.checked) {
-                if (this.game.ingame) {
-                    this.game.chatTyped = '::gpu';
-                    this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
-                } else {
-                    await this.enableGPURenderer();
-                }
-            } else {
-                if (this.game.ingame) {
-                    this.game.chatTyped = '::gpu';
-                    this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
-                } else {
-                    this.disableGPURenderer();
-                }
-            }
+            await this.onGpuChange();
         });
 
         // Resizable toggle
