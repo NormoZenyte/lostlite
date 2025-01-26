@@ -4301,7 +4301,6 @@ export class Game extends Client {
                                 }
                             } else if (this.chatTyped === '::entityoverlay') {
                                 Client.showTrueTile = !Client.showTrueTile;
-                                console.log('coock');
                             } else if (this.chatTyped === '::debug') {
                                 Client.showDebug = !Client.showDebug;
                             } else if (this.chatTyped === '::gpu') {
@@ -6055,7 +6054,6 @@ export class Game extends Client {
                     this.sceneState = 2;
                     World.levelBuilt = this.currentLevel;
                     this.buildScene();
-                    console.log('FDuck');
                     await this?.onWorldLoaded();
                 }
                 if (Client.lowMemory && this.sceneState === 2 && World.levelBuilt !== this.currentLevel) {
