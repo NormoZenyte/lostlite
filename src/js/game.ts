@@ -1944,7 +1944,7 @@ export class Game extends Client {
                 }
             }
 
-            if (Client.showTrueTile) {
+            if (Plugins.SHOW_TRUE_TILE) {
                 // true tile overlay
                 if (entity.pathLength > 0 || entity.forceMoveEndCycle >= this.loopCycle || entity.forceMoveStartCycle > this.loopCycle) {
                     const halfUnit: number = 64 * entity.size;
@@ -4300,7 +4300,9 @@ export class Game extends Client {
                                     }
                                 }
                             } else if (this.chatTyped === '::entityoverlay') {
-                                Client.showTrueTile = !Client.showTrueTile;
+                                Plugins.SHOW_TRUE_TILE = !Plugins.SHOW_TRUE_TILE;
+                            } else if (this.chatTyped === '::roofs') {
+                                Plugins.REMOVE_ROOFS = !Plugins.REMOVE_ROOFS;
                             } else if (this.chatTyped === '::debug') {
                                 Client.showDebug = !Client.showDebug;
                             } else if (this.chatTyped === '::gpu') {
@@ -8742,6 +8744,9 @@ export class Game extends Client {
     };
 
     private getTopLevel = (): number => {
+        if (Plugins.REMOVE_ROOFS) {
+            return this.currentLevel;
+        }
         let top: number = 3;
         if (this.cameraPitch < 310 && this.localPlayer) {
             let cameraLocalTileX: number = this.cameraX >> 7;

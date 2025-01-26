@@ -137,7 +137,8 @@ export class RendererWebGPU extends Renderer {
         const presentationFormat: GPUTextureFormat = navigator.gpu.getPreferredCanvasFormat();
         context.configure({
             device,
-            format: presentationFormat
+            format: presentationFormat,
+            alphaMode: 'opaque'
         });
 
         return new RendererWebGPU(canvas, device, context);
@@ -279,7 +280,7 @@ export class RendererWebGPU extends Renderer {
             compute: {
                 module: this.rasterizerShaderModule,
                 entryPoint: 'clear'
-            }
+            },
         });
 
         // depth

@@ -19,6 +19,7 @@ class UIManager {
     private tileMarkerToggle: HTMLInputElement;
     private resizableToggle: HTMLInputElement;
     private debugToggle: HTMLInputElement;
+    private roofsToggle: HTMLInputElement;
     private canvasContainer: HTMLElement;
     private canvas: HTMLCanvasElement;
 
@@ -29,6 +30,7 @@ class UIManager {
         this.tileMarkerToggle = document.getElementById('tile-marker-toggle') as HTMLInputElement;
         this.resizableToggle = document.getElementById('resizable-toggle') as HTMLInputElement;
         this.debugToggle = document.getElementById('debug-toggle') as HTMLInputElement;
+        this.roofsToggle = document.getElementById('roofs-toggle') as HTMLInputElement;
         this.canvasContainer = document.getElementById('canvas-container') as HTMLElement;
         this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
@@ -99,7 +101,7 @@ class UIManager {
 
     async test(): Promise<void> {
         const loadDebug = async (): Promise<void> => {
-            if (this.game.ingame && this.debugToggle.checked) {
+            if (this.game.ingame) {
                 this.game.chatTyped = '::debug';
                 this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
             }
@@ -107,16 +109,32 @@ class UIManager {
         }
 
         const loadTrueTile = async (): Promise<void> => {
-            if (this.game.ingame && this.trueTileToggle.checked) {
-                console.log('Sending key command')
+            if (this.game.ingame) {
                 this.game.chatTyped = '::entityoverlay';
                 this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
             }
             return Promise.resolve();
         }
 
-        this.commands.push(loadDebug);
-        this.commands.push(loadTrueTile);
+        const loadRoofsTile = async (): Promise<void> => {
+            if (this.game.ingame) {
+                this.game.chatTyped = '::roofs';
+                this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
+            }
+            return Promise.resolve();
+        }
+
+        if (this.debugToggle.checked) {
+            this.commands.push(loadDebug);
+        }
+
+        if (this.trueTileToggle.checked) {
+            this.commands.push(loadTrueTile);
+        }
+
+        if (this.roofsToggle.checked) {
+            this.commands.push(loadRoofsTile);
+        }
     }
 
     async initializeToggles2(): Promise<void> {
@@ -139,8 +157,19 @@ class UIManager {
             localStorage.setItem('trueTileEnabled', this.trueTileToggle.checked.toString());
 
             if (this.game.ingame) {
-                console.log('Sending key command')
                 this.game.chatTyped = '::entityoverlay';
+                this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
+            }
+        });
+
+        // Roofs toggle
+        this.roofsToggle.addEventListener('change', () => {
+            const pluginItem = this.roofsToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.roofsToggle.checked);
+            localStorage.setItem('roofsEnabled', this.roofsToggle.checked.toString());
+
+            if (this.game.ingame) {
+                this.game.chatTyped = '::roofs';
                 this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
             }
         });
@@ -158,11 +187,19 @@ class UIManager {
             this.debugToggle.closest('.plugin-item')?.classList.add('active');
         }
 
-        // Initialize other toggle states
+        // Initialize roofs state
+        if (localStorage.getItem('roofsEnabled') === 'true') {
+            this.roofsToggle.checked = true;
+            this.roofsToggle.closest('.plugin-item')?.classList.add('active');
+        }
+
+        // Initialize true tile state
         if (localStorage.getItem('trueTileEnabled') === 'true') {
             this.trueTileToggle.checked = true;
             this.trueTileToggle.closest('.plugin-item')?.classList.add('active');
         }
+
+        // Initialize tile markers state
         if (localStorage.getItem('tileMarkerEnabled') === 'true') {
             this.tileMarkerToggle.checked = true;
             this.tileMarkerToggle.closest('.plugin-item')?.classList.add('active');
@@ -274,7 +311,6 @@ export const LostLite = async (): Promise<void> => {
     }
 
     game.onWorldLoaded = async (): Promise<void> => {
-        console.log(`On world loaded. ${uiManager?.initializeToggles2}`);
         await uiManager?.initializeToggles2();
         uiManager?.test();
     }
