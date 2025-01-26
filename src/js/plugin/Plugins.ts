@@ -4,4 +4,5 @@ export default class Plugins {
     static IN_PACKETS: number = 50; // default 5
     static REMOVE_ROOFS: boolean = false; // default false
     static SHOW_TRUE_TILE: boolean = false; // default false
+    static NODRAG: boolean = false; // default false
 }

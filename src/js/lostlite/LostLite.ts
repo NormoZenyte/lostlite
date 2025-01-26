@@ -20,6 +20,7 @@ class UIManager {
     private resizableToggle: HTMLInputElement;
     private debugToggle: HTMLInputElement;
     private roofsToggle: HTMLInputElement;
+    private nodragToggle: HTMLInputElement;
     private canvasContainer: HTMLElement;
     private canvas: HTMLCanvasElement;
 
@@ -31,6 +32,7 @@ class UIManager {
         this.resizableToggle = document.getElementById('resizable-toggle') as HTMLInputElement;
         this.debugToggle = document.getElementById('debug-toggle') as HTMLInputElement;
         this.roofsToggle = document.getElementById('roofs-toggle') as HTMLInputElement;
+        this.nodragToggle = document.getElementById('nodrag-toggle') as HTMLInputElement;
         this.canvasContainer = document.getElementById('canvas-container') as HTMLElement;
         this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
@@ -120,9 +122,17 @@ class UIManager {
             return Promise.resolve();
         }
 
-        const loadRoofsTile = async (): Promise<void> => {
+        const loadRoofs = async (): Promise<void> => {
             if (this.game.ingame) {
                 this.game.chatTyped = '::roofs';
+                this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
+            }
+            return Promise.resolve();
+        }
+
+        const loadNodrag = async (): Promise<void> => {
+            if (this.game.ingame) {
+                this.game.chatTyped = '::nodrag';
                 this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
             }
             return Promise.resolve();
@@ -137,7 +147,11 @@ class UIManager {
         }
 
         if (this.roofsToggle.checked) {
-            this.commands.push(loadRoofsTile);
+            this.commands.push(loadRoofs);
+        }
+
+        if (this.nodragToggle.checked) {
+            this.commands.push(loadNodrag);
         }
     }
 
@@ -178,6 +192,18 @@ class UIManager {
             }
         });
 
+        // Nodrag toggle
+        this.nodragToggle.addEventListener('change', () => {
+            const pluginItem = this.nodragToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.nodragToggle.checked);
+            localStorage.setItem('nodragEnabled', this.nodragToggle.checked.toString());
+
+            if (this.game.ingame) {
+                this.game.chatTyped = '::nodrag';
+                this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
+            }
+        });
+
         // Tile Marker toggle
         this.tileMarkerToggle.addEventListener('change', () => {
             const pluginItem = this.tileMarkerToggle.closest('.plugin-item');
@@ -195,6 +221,12 @@ class UIManager {
         if (localStorage.getItem('roofsEnabled') === 'true') {
             this.roofsToggle.checked = true;
             this.roofsToggle.closest('.plugin-item')?.classList.add('active');
+        }
+
+        // Initialize nodrag state
+        if (localStorage.getItem('nodragEnabled') === 'true') {
+            this.nodragToggle.checked = true;
+            this.nodragToggle.closest('.plugin-item')?.classList.add('active');
         }
 
         // Initialize true tile state

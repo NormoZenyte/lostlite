@@ -1222,7 +1222,7 @@ export class Game extends Client {
                     }
 
                     this.objDragArea = 0;
-                    if (this.objGrabThreshold && this.objDragCycles >= 5) {
+                    if (this.objGrabThreshold && this.objDragCycles >= 5 && (!Plugins.NODRAG || (Plugins.NODRAG && this.actionKey[6] == 0))) { // holding shift
                         this.hoveredSlotParentId = -1;
                         this.handleInput();
                         if (this.hoveredSlotParentId === this.objDragInterfaceId && this.hoveredSlot !== this.objDragSlot) {
@@ -3146,7 +3146,7 @@ export class Game extends Client {
                     const comId: number = this.menuParamC[this.menuSize - 1];
                     const com: Component = Component.instances[comId];
 
-                    if (com.draggable) {
+                    if (com.draggable && (!Plugins.NODRAG || (Plugins.NODRAG && this.actionKey[6] == 0))) { // holding shift
                         this.objGrabThreshold = false;
                         this.objDragCycles = 0;
                         this.objDragInterfaceId = comId;
@@ -4303,6 +4303,8 @@ export class Game extends Client {
                                 Plugins.SHOW_TRUE_TILE = !Plugins.SHOW_TRUE_TILE;
                             } else if (this.chatTyped === '::roofs') {
                                 Plugins.REMOVE_ROOFS = !Plugins.REMOVE_ROOFS;
+                            } else if (this.chatTyped === '::nodrag') {
+                                Plugins.NODRAG = !Plugins.NODRAG;
                             } else if (this.chatTyped === '::debug') {
                                 Client.showDebug = !Client.showDebug;
                             } else if (this.chatTyped === '::gpu') {
