@@ -4,6 +4,7 @@ import {Game} from '../game';
 import {Renderer} from '../jagex2/renderer/Renderer';
 import {RendererWebGPU} from '../jagex2/renderer/webgpu/RendererWebGPU';
 import {canvasContainer} from '../jagex2/graphics/Canvas';
+import Plugins from '../plugin/Plugins';
 
 declare global {
     interface Window {
@@ -167,6 +168,43 @@ class UIManager {
         }
     }
 
+    onLogout(): void {
+        if (this.debugToggle.checked) {
+            this.debugToggle.checked = false;
+            const pluginItem = this.debugToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.debugToggle.checked);
+            Plugins.DEBUG = !Plugins.DEBUG;
+        }
+
+        if (this.trueTileToggle.checked) {
+            this.trueTileToggle.checked = false;
+            const pluginItem = this.trueTileToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.trueTileToggle.checked);
+            Plugins.SHOW_TRUE_TILE = !Plugins.SHOW_TRUE_TILE;
+        }
+
+        if (this.roofsToggle.checked) {
+            this.roofsToggle.checked = false;
+            const pluginItem = this.roofsToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.roofsToggle.checked);
+            Plugins.REMOVE_ROOFS = !Plugins.REMOVE_ROOFS;
+        }
+
+        if (this.nodragToggle.checked) {
+            this.nodragToggle.checked = false;
+            const pluginItem = this.nodragToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.nodragToggle.checked);
+            Plugins.NODRAG = !Plugins.NODRAG;
+        }
+
+        if (this.tileMarkerToggle.checked) {
+            this.tileMarkerToggle.checked = false;
+            const pluginItem = this.tileMarkerToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.tileMarkerToggle.checked);
+            Plugins.SHOW_TILE_MARKERS = !Plugins.SHOW_TILE_MARKERS;
+        }
+    }
+
     async initializeToggles2(): Promise<void> {
         // Debug toggle
         this.debugToggle.addEventListener('change', () => {
@@ -226,13 +264,6 @@ class UIManager {
                 this.game.chatTyped = '::tilemarkers';
                 this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
             }
-        });
-
-        // Tile Marker toggle
-        this.tileMarkerToggle.addEventListener('change', () => {
-            const pluginItem = this.tileMarkerToggle.closest('.plugin-item');
-            pluginItem?.classList.toggle('active', this.tileMarkerToggle.checked);
-            localStorage.setItem('tileMarkerEnabled', this.tileMarkerToggle.checked.toString());
         });
 
         // Initialize debug state
@@ -384,6 +415,10 @@ export const LostLite = async (): Promise<void> => {
         if (polled) {
             await polled();
         }
+    }
+
+    game.onLogout = async (): Promise<void> => {
+        uiManager?.onLogout();
     }
 
     game.run().then((): void => {

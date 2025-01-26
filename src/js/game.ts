@@ -856,7 +856,11 @@ export class Game extends Client {
             if (!reconnect) {
                 this.loginMessage0 = '';
                 this.loginMessage1 = 'Connecting to server...';
+                Renderer.endFrame();
+                Renderer.startFrame();
                 await this.drawTitleScreen();
+                Renderer.endFrame();
+                Renderer.startFrame();
             }
             if (Game.getParameter('world') === '998') {
                 if (this.peer && !this.peer.dc) {
@@ -1782,7 +1786,7 @@ export class Game extends Client {
         this.scene?.clearTemporaryLocs();
         this.draw2DEntityElements();
         this.drawTileHint();
-        if (Client.showDebug) {
+        if (Plugins.DEBUG) {
             this.drawDebug();
         }
         this.updateTextures(jitter);
@@ -1955,7 +1959,7 @@ export class Game extends Client {
                 this.debugDrawTileOverlay(entity.x, entity.z, this.currentLevel, entity.size, 0x666666, false);
             }
 
-            if (Client.showDebug) {
+            if (Plugins.DEBUG) {
                 let offsetY: number = 0;
                 this.projectFromEntity(entity, entity.height + 30);
 
@@ -4308,7 +4312,7 @@ export class Game extends Client {
                             } else if (this.chatTyped === '::tilemarkers') {
                                 Plugins.SHOW_TILE_MARKERS = !Plugins.SHOW_TILE_MARKERS;
                             } else if (this.chatTyped === '::debug') {
-                                Client.showDebug = !Client.showDebug;
+                                Plugins.DEBUG = !Plugins.DEBUG;
                             } else if (this.chatTyped === '::gpu') {
                                 if (Renderer.renderer) {
                                     Renderer.resetRenderer();
@@ -4913,10 +4917,11 @@ export class Game extends Client {
 
         stopMidi(false);
         this.currentMidi = null;
-        this.nextMusicDelay = 0;
-        if (!Client.lowMemory) {
-            await this.setMidi('scape_main', 12345678, 40000, false);
-        }
+        // this.nextMusicDelay = 0;
+        // if (!Client.lowMemory) {
+        //     await this.setMidi('scape_main', 12345678, 40000, false);
+        // }
+        await this.onLogout();
     };
 
     private read = async (): Promise<boolean> => {
@@ -6226,7 +6231,7 @@ export class Game extends Client {
             this.messageSender[i] = this.messageSender[i - 1];
             this.messageText[i] = this.messageText[i - 1];
         }
-        if (Client.showDebug && type === 0) {
+        if (Plugins.DEBUG && type === 0) {
             text = '[' + ((this.loopCycle / 30) | 0) + ']: ' + text;
         }
         this.messageType[0] = type;
@@ -6603,7 +6608,7 @@ export class Game extends Client {
                             }
 
                             this.menuOption[this.menuSize] = 'Examine @lre@' + obj.name;
-                            if (Client.showDebug) {
+                            if (Plugins.DEBUG) {
                                 this.menuOption[this.menuSize] += '@whi@ (' + obj.id + ')';
                             }
                             this.menuAction[this.menuSize] = 1773;
@@ -6755,7 +6760,7 @@ export class Game extends Client {
                     }
 
                     this.menuOption[this.menuSize] = 'Examine @cya@' + loc.name;
-                    if (Client.showDebug) {
+                    if (Plugins.DEBUG) {
                         this.menuOption[this.menuSize] += '@whi@ (' + loc.id + ')';
                     }
                     this.menuAction[this.menuSize] = 1175;
@@ -6869,7 +6874,7 @@ export class Game extends Client {
                         }
 
                         this.menuOption[this.menuSize] = 'Examine @lre@' + type.name;
-                        if (Client.showDebug) {
+                        if (Plugins.DEBUG) {
                             this.menuOption[this.menuSize] += '@whi@ (' + obj.index + ')';
                         }
                         this.menuAction[this.menuSize] = 1102;
@@ -6965,7 +6970,7 @@ export class Game extends Client {
             }
 
             this.menuOption[this.menuSize] = 'Examine @yel@' + tooltip;
-            if (Client.showDebug) {
+            if (Plugins.DEBUG) {
                 this.menuOption[this.menuSize] += '@whi@ (' + npc.id + ')';
             }
             this.menuAction[this.menuSize] = 1607;

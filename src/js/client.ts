@@ -57,7 +57,6 @@ export abstract class Client extends GameShell {
     static lowMemory: boolean = false;
     static serverAddress: string = '';
     static httpAddress: string = '';
-    static showDebug: boolean = false;
     static chatEra: number = 2; // 0 - early beta, 1 - late beta, 2 - launch
     static cameraEditor: boolean = false;
     static githubRepository: string = 'https://raw.githubusercontent.com/2004scape/Server/main';
@@ -86,6 +85,7 @@ export abstract class Client extends GameShell {
     public onLoginScreenLoaded: () => void = (): void => {};
     public onWorldLoaded: () => Promise<void> = async (): Promise<void> => {};
     public onTick: () => Promise<void> = async (): Promise<void> => {};
+    public onLogout: () => Promise<void> = async (): Promise<void> => {};
 
     static setHighMemory = (): void => {
         World3D.lowMemory = false;
