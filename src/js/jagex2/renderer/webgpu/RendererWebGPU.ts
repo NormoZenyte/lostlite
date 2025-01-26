@@ -280,7 +280,7 @@ export class RendererWebGPU extends Renderer {
             compute: {
                 module: this.rasterizerShaderModule,
                 entryPoint: 'clear'
-            },
+            }
         });
 
         // depth

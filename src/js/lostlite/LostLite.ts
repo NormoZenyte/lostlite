@@ -23,6 +23,7 @@ class UIManager {
     private roofsToggle: HTMLInputElement;
     private nodragToggle: HTMLInputElement;
     private hideipToggle: HTMLInputElement;
+    private afkToggle: HTMLInputElement;
     private canvasContainer: HTMLElement;
     private canvas: HTMLCanvasElement;
 
@@ -36,6 +37,7 @@ class UIManager {
         this.roofsToggle = document.getElementById('roofs-toggle') as HTMLInputElement;
         this.nodragToggle = document.getElementById('nodrag-toggle') as HTMLInputElement;
         this.hideipToggle = document.getElementById('ip-toggle') as HTMLInputElement;
+        this.afkToggle = document.getElementById('afk-toggle') as HTMLInputElement;
         this.canvasContainer = document.getElementById('canvas-container') as HTMLElement;
         this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
@@ -44,7 +46,7 @@ class UIManager {
             this.setupEventListeners();
             this.initializeFPSCounter();
             this.initializeSidebar();
-        }
+        };
 
         load().then((): void => console.log('Finished loading LostLite.'));
     }
@@ -66,11 +68,11 @@ class UIManager {
             this.gpuToggle.checked = false;
             await this.onGpuChange();
         }
-        console.log('Finished turning on gpu.')
+        console.log('Finished turning on gpu.');
     }
 
     private disableGPURenderer(): void {
-        console.log('turning off gpu...')
+        console.log('turning off gpu...');
         Renderer.resetRenderer();
     }
 
@@ -111,6 +113,13 @@ class UIManager {
             this.hideipToggle.closest('.plugin-item')?.classList.add('active');
             Plugins.HIDE_IP = true;
         }
+
+        // Initialize afk state
+        if (localStorage.getItem('afkEnabled') === 'true') {
+            this.afkToggle.checked = true;
+            this.afkToggle.closest('.plugin-item')?.classList.add('active');
+            Plugins.AFK = true;
+        }
     }
 
     commands: (() => Promise<void>)[] = [];
@@ -122,7 +131,7 @@ class UIManager {
                 this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
             }
             return Promise.resolve();
-        }
+        };
 
         const loadTrueTile = async (): Promise<void> => {
             if (this.game.ingame) {
@@ -130,7 +139,7 @@ class UIManager {
                 this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
             }
             return Promise.resolve();
-        }
+        };
 
         const loadRoofs = async (): Promise<void> => {
             if (this.game.ingame) {
@@ -138,7 +147,7 @@ class UIManager {
                 this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
             }
             return Promise.resolve();
-        }
+        };
 
         const loadNodrag = async (): Promise<void> => {
             if (this.game.ingame) {
@@ -146,7 +155,7 @@ class UIManager {
                 this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
             }
             return Promise.resolve();
-        }
+        };
 
         const loadTilemarkers = async (): Promise<void> => {
             if (this.game.ingame) {
@@ -154,7 +163,7 @@ class UIManager {
                 this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
             }
             return Promise.resolve();
-        }
+        };
 
         if (this.debugToggle.checked) {
             this.commands.push(loadDebug);
@@ -248,7 +257,6 @@ class UIManager {
             if (this.game.ingame) {
                 this.game.chatTyped = '::roofs';
                 this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
-
             }
         });
 
@@ -343,6 +351,14 @@ class UIManager {
             Plugins.HIDE_IP = !Plugins.HIDE_IP;
         });
 
+        // AFK
+        this.afkToggle.addEventListener('change', async () => {
+            const pluginItem = this.afkToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.afkToggle.checked);
+            localStorage.setItem('afkEnabled', this.afkToggle.checked.toString());
+            Plugins.AFK = !Plugins.AFK;
+        });
+
         // Resizable toggle
         this.resizableToggle.addEventListener('change', () => {
             this.canvasContainer.classList.toggle('resizable', this.resizableToggle.checked);
@@ -372,7 +388,7 @@ class UIManager {
 
     private initializeFPSCounter(): void {
         const fpsCounter = document.querySelector('.fps-counter span') as HTMLElement;
-        
+
         const updateFPS = (): void => {
             fpsCounter.textContent = `${this.game.fps} FPS`;
             requestAnimationFrame(updateFPS);
@@ -400,11 +416,11 @@ class UIManager {
             const items = target.parentElement?.querySelectorAll('.plugin-item');
             const chevron = target.querySelector('.fa-chevron-down, .fa-chevron-up');
             const isCollapsed = chevron?.classList.contains('fa-chevron-down');
-            
+
             items?.forEach((item: Element) => {
                 (item as HTMLElement).style.display = isCollapsed ? 'flex' : 'none';
             });
-            
+
             chevron?.classList.toggle('fa-chevron-down');
             chevron?.classList.toggle('fa-chevron-up');
         });
@@ -421,27 +437,27 @@ export const LostLite = async (): Promise<void> => {
     let uiManager: UIManager | null = null;
     game.onLoginScreenLoaded = (): void => {
         uiManager = new UIManager(game);
-    }
+    };
 
     game.onWorldLoaded = async (): Promise<void> => {
         await uiManager?.initializeToggles2();
         uiManager?.test();
-    }
+    };
 
     game.onTick = async (): Promise<void> => {
         const polled: (() => Promise<void>) | undefined = uiManager?.commands?.pop();
         if (polled) {
             await polled();
         }
-    }
+    };
 
     game.onLogout = async (): Promise<void> => {
         uiManager?.onLogout();
-    }
+    };
 
     game.run().then((): void => {
-        console.log('Finished.')
+        console.log('Finished.');
     });
-}
+};
 
 await LostLite();

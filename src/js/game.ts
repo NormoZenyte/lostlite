@@ -1226,7 +1226,8 @@ export class Game extends Client {
                     }
 
                     this.objDragArea = 0;
-                    if (this.objGrabThreshold && this.objDragCycles >= 5 && (!Plugins.NODRAG || (Plugins.NODRAG && this.actionKey[6] == 0))) { // holding shift
+                    if (this.objGrabThreshold && this.objDragCycles >= 5 && (!Plugins.NODRAG || (Plugins.NODRAG && this.actionKey[6] == 0))) {
+                        // holding shift
                         this.hoveredSlotParentId = -1;
                         this.handleInput();
                         if (this.hoveredSlotParentId === this.objDragInterfaceId && this.hoveredSlot !== this.objDragSlot) {
@@ -1317,12 +1318,14 @@ export class Game extends Client {
             // timers when a different tab is active, or the window has been minimized.
             // afk logout has to still happen after 90s of no activity (if allowed).
             // https://developer.chrome.com/blog/timer-throttling-in-chrome-88/
-            if (Date.now() - this.idleCycles > 90_000) {
-                // 4500 ticks * 20ms = 90000ms
-                this.idleTimeout = 250;
-                // 500 ticks * 20ms = 10000ms
-                this.idleCycles = Date.now() - 10_000;
-                this.out.p1isaac(ClientProt.IDLE_TIMER);
+            if (!Plugins.AFK) {
+                if (Date.now() - this.idleCycles > 90_000) {
+                    // 4500 ticks * 20ms = 90000ms
+                    this.idleTimeout = 250;
+                    // 500 ticks * 20ms = 10000ms
+                    this.idleCycles = Date.now() - 10_000;
+                    this.out.p1isaac(ClientProt.IDLE_TIMER);
+                }
             }
             // === original code ===
             // this.idleCycles++;
@@ -2191,6 +2194,8 @@ export class Game extends Client {
             this.fontBold12?.drawStringRight(x, y, 'tick', Colors.YELLOW, true);
         }
         y += 13;
+        this.fontPlain11?.drawStringRight(x, y, `Kit: ${Renderer.renderer ? 'WebGPU' : 'CPU'}`, Colors.YELLOW, true);
+        y += 13;
         this.fontPlain11?.drawStringRight(x, y, `Fps: ${this.fps}, ${this.deltime} ms`, Colors.YELLOW, true);
         y += 13;
         this.fontPlain11?.drawStringRight(x, y, `Draw: ${this.ms.toFixed(1)}, Avg: ${this.msAvg.toFixed(1)}, Slow: ${this.slowestMS.toFixed(1)} ms`, Colors.YELLOW, true);
@@ -2202,23 +2207,23 @@ export class Game extends Client {
         this.fontPlain11?.drawStringRight(x, y, 'Camera Pos: ' + this.cameraX + ', ' + this.cameraZ + ', ' + this.cameraY, Colors.YELLOW, true);
         y += 13;
         this.fontPlain11?.drawStringRight(x, y, 'Camera Angle: ' + this.cameraYaw + ', ' + this.cameraPitch, Colors.YELLOW, true);
-        y += 13;
-        this.fontPlain11?.drawStringRight(
-            x,
-            y,
-            'Cutscene Source: ' + this.cutsceneSrcLocalTileX + ', ' + this.cutsceneSrcLocalTileZ + ' ' + this.cutsceneSrcHeight + '; ' + this.cutsceneMoveSpeed + ', ' + this.cutsceneMoveAcceleration,
-            Colors.YELLOW,
-            true
-        );
-        y += 13;
-        this.fontPlain11?.drawStringRight(
-            x,
-            y,
-            'Cutscene Destination: ' + this.cutsceneDstLocalTileX + ', ' + this.cutsceneDstLocalTileZ + ' ' + this.cutsceneDstHeight + '; ' + this.cutsceneRotateSpeed + ', ' + this.cutsceneRotateAcceleration,
-            Colors.YELLOW,
-            true
-        );
         if (Client.cameraEditor) {
+            y += 13;
+            this.fontPlain11?.drawStringRight(
+                x,
+                y,
+                'Cutscene Source: ' + this.cutsceneSrcLocalTileX + ', ' + this.cutsceneSrcLocalTileZ + ' ' + this.cutsceneSrcHeight + '; ' + this.cutsceneMoveSpeed + ', ' + this.cutsceneMoveAcceleration,
+                Colors.YELLOW,
+                true
+            );
+            y += 13;
+            this.fontPlain11?.drawStringRight(
+                x,
+                y,
+                'Cutscene Destination: ' + this.cutsceneDstLocalTileX + ', ' + this.cutsceneDstLocalTileZ + ' ' + this.cutsceneDstHeight + '; ' + this.cutsceneRotateSpeed + ', ' + this.cutsceneRotateAcceleration,
+                Colors.YELLOW,
+                true
+            );
             y += 13;
             this.fontPlain11?.drawStringRight(x, y, 'Instructions:', Colors.YELLOW, true);
             y += 13;
@@ -3150,7 +3155,8 @@ export class Game extends Client {
                     const comId: number = this.menuParamC[this.menuSize - 1];
                     const com: Component = Component.instances[comId];
 
-                    if (com.draggable && (!Plugins.NODRAG || (Plugins.NODRAG && this.actionKey[6] == 0))) { // holding shift
+                    if (com.draggable && (!Plugins.NODRAG || (Plugins.NODRAG && this.actionKey[6] == 0))) {
+                        // holding shift
                         this.objGrabThreshold = false;
                         this.objDragCycles = 0;
                         this.objDragInterfaceId = comId;
@@ -9542,4 +9548,3 @@ export class Game extends Client {
         this.imageTitle1?.draw(661, 0);
     };
 }
-

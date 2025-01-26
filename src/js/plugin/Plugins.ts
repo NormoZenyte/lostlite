@@ -8,4 +8,5 @@ export default class Plugins {
     static SHOW_TILE_MARKERS: boolean = false; // default false
     static DEBUG: boolean = false; // default false
     static HIDE_IP: boolean = false; // default false
+    static AFK: boolean = false; // default false
 }
