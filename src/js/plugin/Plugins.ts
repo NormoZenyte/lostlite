@@ -5,4 +5,5 @@ export default class Plugins {
     static REMOVE_ROOFS: boolean = false; // default false
     static SHOW_TRUE_TILE: boolean = false; // default false
     static NODRAG: boolean = false; // default false
+    static SHOW_TILE_MARKERS: boolean = false; // default false
 }

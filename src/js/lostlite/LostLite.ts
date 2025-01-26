@@ -138,6 +138,14 @@ class UIManager {
             return Promise.resolve();
         }
 
+        const loadTilemarkers = async (): Promise<void> => {
+            if (this.game.ingame) {
+                this.game.chatTyped = '::tilemarkers';
+                this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
+            }
+            return Promise.resolve();
+        }
+
         if (this.debugToggle.checked) {
             this.commands.push(loadDebug);
         }
@@ -152,6 +160,10 @@ class UIManager {
 
         if (this.nodragToggle.checked) {
             this.commands.push(loadNodrag);
+        }
+
+        if (this.tileMarkerToggle.checked) {
+            this.commands.push(loadTilemarkers);
         }
     }
 
@@ -200,6 +212,18 @@ class UIManager {
 
             if (this.game.ingame) {
                 this.game.chatTyped = '::nodrag';
+                this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
+            }
+        });
+
+        // Tile markers toggle
+        this.tileMarkerToggle.addEventListener('change', () => {
+            const pluginItem = this.tileMarkerToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.tileMarkerToggle.checked);
+            localStorage.setItem('nodragEnabled', this.tileMarkerToggle.checked.toString());
+
+            if (this.game.ingame) {
+                this.game.chatTyped = '::tilemarkers';
                 this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
             }
         });

@@ -2069,7 +2069,7 @@ export class Game extends Client {
             }
         }
 
-        if (Client.showDebug) {
+        if (Plugins.SHOW_TILE_MARKERS) {
             for (let i: number = 0; i < this.userTileMarkers.length; i++) {
                 const marker: Tile | null = this.userTileMarkers[i];
                 if (!marker || marker.level !== this.currentLevel || marker.x < 0 || marker.z < 0 || marker.x >= 104 || marker.z >= 104) {
@@ -4305,6 +4305,8 @@ export class Game extends Client {
                                 Plugins.REMOVE_ROOFS = !Plugins.REMOVE_ROOFS;
                             } else if (this.chatTyped === '::nodrag') {
                                 Plugins.NODRAG = !Plugins.NODRAG;
+                            } else if (this.chatTyped === '::tilemarkers') {
+                                Plugins.SHOW_TILE_MARKERS = !Plugins.SHOW_TILE_MARKERS;
                             } else if (this.chatTyped === '::debug') {
                                 Client.showDebug = !Client.showDebug;
                             } else if (this.chatTyped === '::gpu') {
@@ -7490,7 +7492,7 @@ export class Game extends Client {
             const startX: number = this.bfsStepX[length];
             const startZ: number = this.bfsStepZ[length];
 
-            if (Client.showDebug && this.actionKey[6] === 1 && this.actionKey[7] === 1) {
+            if (Plugins.SHOW_TILE_MARKERS && this.actionKey[6] === 1 && this.actionKey[7] === 1) {
                 // check if tile is already added, if so remove it
                 for (let i: number = 0; i < this.userTileMarkers.length; i++) {
                     const marker: Tile | null = this.userTileMarkers[i];
