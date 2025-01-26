@@ -22,6 +22,7 @@ class UIManager {
     private debugToggle: HTMLInputElement;
     private roofsToggle: HTMLInputElement;
     private nodragToggle: HTMLInputElement;
+    private hideipToggle: HTMLInputElement;
     private canvasContainer: HTMLElement;
     private canvas: HTMLCanvasElement;
 
@@ -34,6 +35,7 @@ class UIManager {
         this.debugToggle = document.getElementById('debug-toggle') as HTMLInputElement;
         this.roofsToggle = document.getElementById('roofs-toggle') as HTMLInputElement;
         this.nodragToggle = document.getElementById('nodrag-toggle') as HTMLInputElement;
+        this.hideipToggle = document.getElementById('ip-toggle') as HTMLInputElement;
         this.canvasContainer = document.getElementById('canvas-container') as HTMLElement;
         this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
@@ -101,6 +103,13 @@ class UIManager {
             this.resizableToggle.checked = true;
             this.canvasContainer.classList.add('resizable');
             this.updateCanvasSize();
+        }
+
+        // Initialize hide ip state
+        if (localStorage.getItem('hideipEnabled') === 'true') {
+            this.hideipToggle.checked = true;
+            this.hideipToggle.closest('.plugin-item')?.classList.add('active');
+            Plugins.HIDE_IP = true;
         }
     }
 
@@ -324,6 +333,14 @@ class UIManager {
         // GPU toggle
         this.gpuToggle.addEventListener('change', async () => {
             await this.onGpuChange();
+        });
+
+        // Hide IP
+        this.hideipToggle.addEventListener('change', async () => {
+            const pluginItem = this.hideipToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.hideipToggle.checked);
+            localStorage.setItem('hideipEnabled', this.hideipToggle.checked.toString());
+            Plugins.HIDE_IP = !Plugins.HIDE_IP;
         });
 
         // Resizable toggle

@@ -7,4 +7,5 @@ export default class Plugins {
     static NODRAG: boolean = false; // default false
     static SHOW_TILE_MARKERS: boolean = false; // default false
     static DEBUG: boolean = false; // default false
+    static HIDE_IP: boolean = false; // default false
 }

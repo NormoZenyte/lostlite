@@ -47,6 +47,7 @@ import ClientWorkerStream from './jagex2/io/ClientWorkerStream';
 import {downloadURL} from './jagex2/util/SaveUtil';
 import {Host, Peer} from './jagex2/io/RTCDataChannels';
 import {Renderer} from './jagex2/renderer/Renderer';
+import Plugins from './plugin/Plugins';
 
 // noinspection JSSuspiciousNameCombination
 export abstract class Client extends GameShell {
@@ -1462,7 +1463,7 @@ export abstract class Client extends GameShell {
                 } else {
                     text = this.daysSinceLastLogin + ' days ago';
                 }
-                component.text = 'You last logged in ' + text + ' from: ' + JString.formatIPv4(this.lastAddress); // TODO dns lookup??
+                component.text = 'You last logged in ' + text + ' from: ' + (Plugins.HIDE_IP ? '' : JString.formatIPv4(this.lastAddress)); // TODO dns lookup??
             }
         } else if (clientCode === Component.CC_UNREAD_MESSAGES) {
             if (this.unreadMessages === 0) {
