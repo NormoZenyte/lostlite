@@ -159,47 +159,63 @@
             }
 
             .plugin-item {
-                padding: 10px 15px 10px 45px;
+                padding: 4px 8px;
                 cursor: pointer;
                 transition: background-color 0.2s;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                font-size: 13px;
             }
 
             .plugin-item:hover {
-                background-color: #2d2d2d;
+                background-color: #3a3a3a;
             }
 
             .plugin-item.active {
                 background-color: #3a3a3a;
             }
 
-            /* Custom scrollbar */
-            .plugin-list::-webkit-scrollbar {
-                width: 8px;
+            .plugin-item-content {
+                display: flex;
+                align-items: center;
+                min-width: 0;
+                flex: 1;
             }
 
-            .plugin-list::-webkit-scrollbar-track {
-                background: #232323;
+            .plugin-item-left {
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
 
-            .plugin-list::-webkit-scrollbar-thumb {
-                background: #444;
-                border-radius: 4px;
+            .plugin-item-right {
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
 
-            .plugin-item i {
-                margin-right: 10px;
-                width: 16px;
-                text-align: center;
+            .plugin-star {
+                color: #aaa;
+                font-size: 12px;
+                width: 14px;
+            }
+
+            .plugin-config {
+                opacity: 0;
+                color: #aaa;
+                transition: opacity 0.2s;
+            }
+
+            .plugin-item:hover .plugin-config {
+                opacity: 1;
             }
 
             .toggle-switch {
                 position: relative;
                 display: inline-block;
-                width: 40px;
-                height: 20px;
+                width: 28px;
+                height: 16px;
                 flex-shrink: 0;
             }
 
@@ -216,36 +232,31 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background-color: #444;
-                transition: .4s;
-                border-radius: 20px;
+                background-color: #2d2d2d;
+                transition: .2s;
+                border-radius: 8px;
+                border: 1px solid #444;
             }
 
             .toggle-slider:before {
                 position: absolute;
                 content: "";
-                height: 16px;
-                width: 16px;
-                left: 2px;
-                bottom: 2px;
-                background-color: white;
-                transition: .4s;
+                height: 12px;
+                width: 12px;
+                left: 1px;
+                bottom: 1px;
+                background-color: #888;
+                transition: .2s;
                 border-radius: 50%;
             }
 
             input:checked + .toggle-slider {
-                background-color: #2196F3;
+                background-color: #dc7000;
             }
 
             input:checked + .toggle-slider:before {
-                transform: translateX(20px);
-            }
-
-            .plugin-item-content {
-                display: flex;
-                align-items: center;
-                min-width: 0;
-                flex: 1;
+                transform: translateX(12px);
+                background-color: #ffd700;
             }
 
             /* Top bar styles */
@@ -304,6 +315,70 @@
                 color: #00ff00;
                 font-family: monospace;
             }
+
+            /* Add styles for RuneLite plugin icons */
+            .plugin-item img.plugin-icon {
+                width: 16px;
+                height: 16px;
+                margin-right: 10px;
+                object-fit: contain;
+            }
+
+            .list-container.collapsed .plugin-item img.plugin-icon {
+                margin-right: 0;
+            }
+
+            .plugin-section {
+                border-bottom: 1px solid #444;
+            }
+
+            .section-header {
+                padding: 8px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                background-color: #232323;
+            }
+
+            .section-header:hover {
+                background-color: #2d2d2d;
+            }
+
+            .section-icon {
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .section-icon img {
+                width: 16px;
+                height: 16px;
+                opacity: 0.7;
+            }
+
+            .section-content {
+                display: none;
+                padding: 4px 0;
+                background-color: #232323;
+            }
+
+            .section-content.expanded {
+                display: block;
+            }
+
+            .section-title {
+                padding: 4px 8px 8px 8px;
+                font-size: 13px;
+                color: #aaa;
+                font-weight: 500;
+            }
+
+            .plugin-item {
+                padding: 4px 8px;
+                cursor: pointer;
+            }
         </style>
     </head>
     <body>
@@ -344,93 +419,147 @@
                         <i class="fas fa-chevron-right toggle-sidebar"></i>
                     </div>
                     <div class="plugin-list">
-                        <div class="plugin-category">
-                            <div class="category-header">
-                                <div class="plugin-item-content">
-                                    <i class="fas fa-puzzle-piece"></i>
-                                    <span>Plugins</span>
+                        <!-- Configuration Section -->
+                        <div class="plugin-section" data-section="config">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <img src="assets/icons/plugins/config/config_icon.png" alt="Configuration">
                                 </div>
-                                <i class="fas fa-chevron-down"></i>
                             </div>
-                            <div class="plugin-item">
-                                <div class="plugin-item-content" title="Toggles GPU optimization for rendering.">
-                                    <i class="fas fa-microchip"></i>
-                                    <span>GPU</span>
+                            <div class="section-content">
+                                <div class="section-title">Configuration</div>
+                                <!-- GPU Plugin -->
+                                <div class="plugin-item">
+                                    <div class="plugin-item-left">
+                                        <i class="fas fa-star plugin-star"></i>
+                                        <img src="assets/icons/plugins/config/config_icon.png" class="plugin-icon" alt="GPU">
+                                        <span>GPU</span>
+                                    </div>
+                                    <div class="plugin-item-right">
+                                        <i class="fas fa-cog plugin-config"></i>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="gpu-toggle">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
                                 </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="gpu-toggle">
-                                    <span class="toggle-slider"></span>
-                                </label>
+                                <!-- Hide IP Plugin -->
+                                <div class="plugin-item">
+                                    <div class="plugin-item-left">
+                                        <i class="fas fa-star plugin-star"></i>
+                                        <img src="assets/icons/plugins/config/config_icon.png" class="plugin-icon" alt="Hide IP">
+                                        <span>Hide IP</span>
+                                    </div>
+                                    <div class="plugin-item-right">
+                                        <i class="fas fa-cog plugin-config"></i>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="ip-toggle">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- No Roofs Plugin -->
+                                <div class="plugin-item">
+                                    <div class="plugin-item-left">
+                                        <i class="fas fa-star plugin-star"></i>
+                                        <img src="assets/icons/plugins/config/config_icon.png" class="plugin-icon" alt="No Roofs">
+                                        <span>No Roofs</span>
+                                    </div>
+                                    <div class="plugin-item-right">
+                                        <i class="fas fa-cog plugin-config"></i>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="roofs-toggle">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- Anti-Drag Plugin -->
+                                <div class="plugin-item">
+                                    <div class="plugin-item-left">
+                                        <i class="fas fa-star plugin-star"></i>
+                                        <img src="assets/icons/plugins/config/config_icon.png" class="plugin-icon" alt="Anti-Drag">
+                                        <span>Anti-Drag</span>
+                                    </div>
+                                    <div class="plugin-item-right">
+                                        <i class="fas fa-cog plugin-config"></i>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="nodrag-toggle">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- True Tile Plugin -->
+                                <div class="plugin-item">
+                                    <div class="plugin-item-left">
+                                        <i class="fas fa-star plugin-star"></i>
+                                        <img src="assets/icons/plugins/devtools/devtools_icon.png" class="plugin-icon" alt="True Tile">
+                                        <span>True Tile</span>
+                                    </div>
+                                    <div class="plugin-item-right">
+                                        <i class="fas fa-cog plugin-config"></i>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="true-tile-toggle">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- Tile Markers Plugin -->
+                                <div class="plugin-item">
+                                    <div class="plugin-item-left">
+                                        <i class="fas fa-star plugin-star"></i>
+                                        <img src="assets/icons/plugins/screenmarkers/panel_icon.png" class="plugin-icon" alt="Tile Markers">
+                                        <span>Tile Markers</span>
+                                    </div>
+                                    <div class="plugin-item-right">
+                                        <i class="fas fa-cog plugin-config"></i>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="tile-marker-toggle">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- AFK Plugin -->
+                                <div class="plugin-item">
+                                    <div class="plugin-item-left">
+                                        <i class="fas fa-star plugin-star"></i>
+                                        <img src="assets/icons/plugins/emojis/zzz.png" class="plugin-icon" alt="AFK">
+                                        <span>AFK</span>
+                                    </div>
+                                    <div class="plugin-item-right">
+                                        <i class="fas fa-cog plugin-config"></i>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="afk-toggle">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="plugin-item">
-                                <div class="plugin-item-content" title="Hides your IP address from the login welcome screen.">
-                                    <i class="fas fa-border-all"></i>
-                                    <span>Hide IP</span>
+                        </div>
+
+                        <!-- Utilities Section -->
+                        <div class="plugin-section" data-section="utilities">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <img src="assets/icons/plugins/devtools/devtools_icon.png" alt="Utilities">
                                 </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="ip-toggle">
-                                    <span class="toggle-slider"></span>
-                                </label>
                             </div>
-                            <div class="plugin-item">
-                                <div class="plugin-item-content" title="Highlights the true tile for players & npcs.">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <span>True Tile</span>
+                            <div class="section-content">
+                                <div class="section-title">Utilities</div>
+                                <!-- Debug Plugin -->
+                                <div class="plugin-item">
+                                    <div class="plugin-item-left">
+                                        <i class="fas fa-star plugin-star"></i>
+                                        <img src="assets/icons/plugins/devtools/devtools_icon.png" class="plugin-icon" alt="Debug">
+                                        <span>Debug</span>
+                                    </div>
+                                    <div class="plugin-item-right">
+                                        <i class="fas fa-cog plugin-config"></i>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="debug-toggle">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
                                 </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="true-tile-toggle">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            <div class="plugin-item">
-                                <div class="plugin-item-content" title="Shift+Alt+Left click to add/remove tile markers.">
-                                    <i class="fas fa-border-all"></i>
-                                    <span>Tile Markers</span>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="tile-marker-toggle">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            <div class="plugin-item">
-                                <div class="plugin-item-content" title="Disable building roofs.">
-                                    <i class="fas fa-border-all"></i>
-                                    <span>No Roofs</span>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="roofs-toggle">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            <div class="plugin-item">
-                                <div class="plugin-item-content" title="Prevent dragging items by holding shift.">
-                                    <i class="fas fa-border-all"></i>
-                                    <span>Anti-Drag</span>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="nodrag-toggle">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            <div class="plugin-item">
-                                <div class="plugin-item-content" title="No AFK logout timer!">
-                                    <i class="fas fa-border-all"></i>
-                                    <span>AFK</span>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="afk-toggle">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            <div class="plugin-item">
-                                <div class="plugin-item-content" title="Enable some extra information.">
-                                    <i class="fas fa-bug"></i>
-                                    <span>Debug</span>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="debug-toggle">
-                                    <span class="toggle-slider"></span>
-                                </label>
                             </div>
                         </div>
                     </div>
