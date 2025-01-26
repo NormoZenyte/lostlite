@@ -239,6 +239,7 @@ class UIManager {
             if (this.game.ingame) {
                 this.game.chatTyped = '::roofs';
                 this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
+
             }
         });
 
