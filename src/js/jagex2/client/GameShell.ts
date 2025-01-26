@@ -6,6 +6,7 @@ import {CanvasEnabledKeys, KeyCodes} from './KeyCodes';
 import InputTracking from './InputTracking';
 import {canvas, canvas2d, canvasOverlay} from '../graphics/Canvas';
 import {Renderer} from '../renderer/Renderer';
+import Plugins from '../../plugin/Plugins';
 
 export default abstract class GameShell {
     static getParameter(name: string): string {
@@ -63,6 +64,13 @@ export default abstract class GameShell {
     private nx: number = 0;
     private ny: number = 0;
 
+    private scrolldown: boolean = false;
+    protected orbitCameraPitch: number = 128;
+    protected orbitCameraYaw: number = 0;
+
+    private dragX: number = 0;
+    private dragZ: number = 0;
+
     constructor(resizetoFit: boolean = false) {
         canvasOverlay.tabIndex = -1;
         canvas2d.fillStyle = 'black';
@@ -117,6 +125,7 @@ export default abstract class GameShell {
         window.onbeforeunload = this.unload;
         canvasOverlay.onfocus = this.onfocus;
         canvasOverlay.onblur = this.onblur;
+        canvasOverlay.onwheel = this.onwheel;
 
         if (this.isMobile) {
             canvasOverlay.ontouchstart = this.ontouchstart;
@@ -483,6 +492,14 @@ export default abstract class GameShell {
     };
 
     private onmousedown = (e: MouseEvent): void => {
+        if (e.button === 1) {
+            this.scrolldown = true;
+            this.dragX = e.screenX;
+            this.dragZ = e.screenY;
+            e.preventDefault();
+            return;
+        }
+
         this.touching = false;
         //Don't 'reset' position (This fixes right click in Android)
         if (e.clientX > 0 || e.clientY > 0) this.setMousePosition(e);
@@ -522,6 +539,10 @@ export default abstract class GameShell {
     };
 
     private onmouseup = (e: MouseEvent): void => {
+        if (e.button === 1) {
+            this.scrolldown = false;
+        }
+
         this.setMousePosition(e);
         this.idleCycles = Date.now();
         this.mouseButton = 0;
@@ -564,7 +585,20 @@ export default abstract class GameShell {
         if (InputTracking.enabled) {
             InputTracking.mouseMoved(this.mouseX, this.mouseY);
         }
+
+        if (this.scrolldown) {
+            const x: number = this.dragX - e.screenX;
+            const z: number = this.dragZ - e.screenY;
+            this.dragged(x, -z);
+            this.dragX = e.screenX;
+            this.dragZ = e.screenY;
+        }
     };
+
+    private dragged(x: number, y: number): void {
+        this.orbitCameraYaw += x;
+        this.orbitCameraPitch += (y / 2) | 0;
+    }
 
     private onfocus = (e: FocusEvent): void => {
         this.hasFocus = true; // mapview applet
@@ -581,6 +615,18 @@ export default abstract class GameShell {
 
         if (InputTracking.enabled) {
             InputTracking.focusLost();
+        }
+    };
+
+    private onwheel = (e: WheelEvent): void => {
+        if (e.deltaY > 0) {
+            if (Plugins.ZOOM < 15) {
+                Plugins.ZOOM++;
+            }
+        } else {
+            if (Plugins.ZOOM > 0) {
+                Plugins.ZOOM--;
+            }
         }
     };
 

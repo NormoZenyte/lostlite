@@ -16,9 +16,10 @@ import TileOverlay from './type/TileOverlay';
 import TileOverlayShape from './type/TileOverlayShape';
 import LocAngle from './LocAngle';
 import {Int32Array3d, TypedArray1d, TypedArray2d, TypedArray3d, TypedArray4d} from '../util/Arrays';
+import Plugins from '../../plugin/Plugins';
 
 export default class World3D {
-    private static visibilityMatrix: boolean[][][][] = new TypedArray4d(8, 32, 51, 51, false);
+    private static visibilityMatrix: boolean[][][][] = new TypedArray4d(8, 32, Plugins.DRAW_DISTANCE * 2 + 1, Plugins.DRAW_DISTANCE * 2 + 1, false);
     private static locBuffer: (Loc | null)[] = new TypedArray1d(100, null);
     static levelOccluderCount: Int32Array = new Int32Array(CollisionMap.LEVELS);
     private static levelOccluders: (Occluder | null)[][] = new TypedArray2d(CollisionMap.LEVELS, 500, null);
@@ -119,7 +120,7 @@ export default class World3D {
         this.viewportCenterX = (viewportWidth / 2) | 0;
         this.viewportCenterY = (viewportHeight / 2) | 0;
 
-        const matrix: boolean[][][][] = new TypedArray4d(9, 32, 53, 53, false);
+        const matrix: boolean[][][][] = new TypedArray4d(9, 32, Plugins.DRAW_DISTANCE * 2 + 3, Plugins.DRAW_DISTANCE * 2 + 3, false);
         for (let pitch: number = 128; pitch <= 384; pitch += 32) {
             for (let yaw: number = 0; yaw < 2048; yaw += 64) {
                 this.sinEyePitch = Draw3D.sin[pitch];
@@ -129,8 +130,8 @@ export default class World3D {
 
                 const pitchLevel: number = ((pitch - 128) / 32) | 0;
                 const yawLevel: number = (yaw / 64) | 0;
-                for (let dx: number = -26; dx <= 26; dx++) {
-                    for (let dz: number = -26; dz <= 26; dz++) {
+                for (let dx: number = -(Plugins.DRAW_DISTANCE + 1); dx <= Plugins.DRAW_DISTANCE + 1; dx++) {
+                    for (let dz: number = -(Plugins.DRAW_DISTANCE + 1); dz <= Plugins.DRAW_DISTANCE + 1; dz++) {
                         const x: number = dx * 128;
                         const z: number = dz * 128;
 
@@ -141,7 +142,7 @@ export default class World3D {
                                 break;
                             }
                         }
-                        matrix[pitchLevel][yawLevel][dx + 25 + 1][dz + 25 + 1] = visible;
+                        matrix[pitchLevel][yawLevel][dx + Plugins.DRAW_DISTANCE + 1][dz + Plugins.DRAW_DISTANCE + 1] = visible;
                     }
                 }
             }
@@ -149,33 +150,33 @@ export default class World3D {
 
         for (let pitchLevel: number = 0; pitchLevel < 8; pitchLevel++) {
             for (let yawLevel: number = 0; yawLevel < 32; yawLevel++) {
-                for (let x: number = -25; x < 25; x++) {
-                    for (let z: number = -25; z < 25; z++) {
+                for (let x: number = -Plugins.DRAW_DISTANCE; x < Plugins.DRAW_DISTANCE; x++) {
+                    for (let z: number = -Plugins.DRAW_DISTANCE; z < Plugins.DRAW_DISTANCE; z++) {
                         let visible: boolean = false;
                         check_areas: for (let dx: number = -1; dx <= 1; dx++) {
                             for (let dz: number = -1; dz <= 1; dz++) {
-                                if (matrix[pitchLevel][yawLevel][x + dx + 25 + 1][z + dz + 25 + 1]) {
+                                if (matrix[pitchLevel][yawLevel][x + dx + Plugins.DRAW_DISTANCE + 1][z + dz + Plugins.DRAW_DISTANCE + 1]) {
                                     visible = true;
                                     break check_areas;
                                 }
 
-                                if (matrix[pitchLevel][(yawLevel + 1) % 31][x + dx + 25 + 1][z + dz + 25 + 1]) {
+                                if (matrix[pitchLevel][(yawLevel + 1) % 31][x + dx + Plugins.DRAW_DISTANCE + 1][z + dz + Plugins.DRAW_DISTANCE + 1]) {
                                     visible = true;
                                     break check_areas;
                                 }
 
-                                if (matrix[pitchLevel + 1][yawLevel][x + dx + 25 + 1][z + dz + 25 + 1]) {
+                                if (matrix[pitchLevel + 1][yawLevel][x + dx + Plugins.DRAW_DISTANCE + 1][z + dz + Plugins.DRAW_DISTANCE + 1]) {
                                     visible = true;
                                     break check_areas;
                                 }
 
-                                if (matrix[pitchLevel + 1][(yawLevel + 1) % 31][x + dx + 25 + 1][z + dz + 25 + 1]) {
+                                if (matrix[pitchLevel + 1][(yawLevel + 1) % 31][x + dx + Plugins.DRAW_DISTANCE + 1][z + dz + Plugins.DRAW_DISTANCE + 1]) {
                                     visible = true;
                                     break check_areas;
                                 }
                             }
                         }
-                        this.visibilityMatrix[pitchLevel][yawLevel][x + 25][z + 25] = visible;
+                        this.visibilityMatrix[pitchLevel][yawLevel][x + Plugins.DRAW_DISTANCE][z + Plugins.DRAW_DISTANCE] = visible;
                     }
                 }
             }
@@ -208,7 +209,7 @@ export default class World3D {
         const tmp: number = (z * this.cosEyeYaw - x * this.sinEyeYaw) >> 16;
         const pz: number = (y * this.sinEyePitch + tmp * this.cosEyePitch) >> 16;
         const py: number = (y * this.cosEyePitch - tmp * this.sinEyePitch) >> 16;
-        if (pz < 50 || pz > 3500) {
+        if (pz < 50 || pz > Plugins.DRAW_DISTANCE * 140) {
             return false;
         }
         const viewportX: number = this.viewportCenterX + (((px << 9) / pz) | 0);
@@ -1015,22 +1016,22 @@ export default class World3D {
         World3D.eyeTileZ = (eyeZ / 128) | 0;
         World3D.topLevel = topLevel;
 
-        World3D.minDrawTileX = World3D.eyeTileX - 25;
+        World3D.minDrawTileX = World3D.eyeTileX - Plugins.DRAW_DISTANCE;
         if (World3D.minDrawTileX < 0) {
             World3D.minDrawTileX = 0;
         }
 
-        World3D.minDrawTileZ = World3D.eyeTileZ - 25;
+        World3D.minDrawTileZ = World3D.eyeTileZ - Plugins.DRAW_DISTANCE;
         if (World3D.minDrawTileZ < 0) {
             World3D.minDrawTileZ = 0;
         }
 
-        World3D.maxDrawTileX = World3D.eyeTileX + 25;
+        World3D.maxDrawTileX = World3D.eyeTileX + Plugins.DRAW_DISTANCE;
         if (World3D.maxDrawTileX > this.maxTileX) {
             World3D.maxDrawTileX = this.maxTileX;
         }
 
-        World3D.maxDrawTileZ = World3D.eyeTileZ + 25;
+        World3D.maxDrawTileZ = World3D.eyeTileZ + Plugins.DRAW_DISTANCE;
         if (World3D.maxDrawTileZ > this.maxTileZ) {
             World3D.maxDrawTileZ = this.maxTileZ;
         }
@@ -1047,7 +1048,7 @@ export default class World3D {
                         continue;
                     }
 
-                    if (tile.drawLevel <= topLevel && (World3D.visibilityMap[x + 25 - World3D.eyeTileX][z + 25 - World3D.eyeTileZ] || this.levelHeightmaps[level][x][z] - eyeY >= 2000)) {
+                    if (tile.drawLevel <= topLevel && (World3D.visibilityMap[x + Plugins.DRAW_DISTANCE - World3D.eyeTileX][z + Plugins.DRAW_DISTANCE - World3D.eyeTileZ] || this.levelHeightmaps[level][x][z] - eyeY >= 2000)) {
                         tile.visible = true;
                         tile.update = true;
                         tile.containsLocs = tile.locCount > 0;
@@ -1063,7 +1064,7 @@ export default class World3D {
 
         for (let level: number = this.minLevel; level < this.maxLevel; level++) {
             const tiles: (Tile | null)[][] = this.levelTiles[level];
-            for (let dx: number = -25; dx <= 0; dx++) {
+            for (let dx: number = -Plugins.DRAW_DISTANCE; dx <= 0; dx++) {
                 const rightTileX: number = World3D.eyeTileX + dx;
                 const leftTileX: number = World3D.eyeTileX - dx;
 
@@ -1071,7 +1072,7 @@ export default class World3D {
                     continue;
                 }
 
-                for (let dz: number = -25; dz <= 0; dz++) {
+                for (let dz: number = -Plugins.DRAW_DISTANCE; dz <= 0; dz++) {
                     const forwardTileZ: number = World3D.eyeTileZ + dz;
                     const backwardTileZ: number = World3D.eyeTileZ - dz;
                     let tile: Tile | null;
@@ -1117,14 +1118,14 @@ export default class World3D {
 
         for (let level: number = this.minLevel; level < this.maxLevel; level++) {
             const tiles: (Tile | null)[][] = this.levelTiles[level];
-            for (let dx: number = -25; dx <= 0; dx++) {
+            for (let dx: number = -Plugins.DRAW_DISTANCE; dx <= 0; dx++) {
                 const rightTileX: number = World3D.eyeTileX + dx;
                 const leftTileX: number = World3D.eyeTileX - dx;
                 if (rightTileX < World3D.minDrawTileX && leftTileX >= World3D.maxDrawTileX) {
                     continue;
                 }
 
-                for (let dz: number = -25; dz <= 0; dz++) {
+                for (let dz: number = -Plugins.DRAW_DISTANCE; dz <= 0; dz++) {
                     const forwardTileZ: number = World3D.eyeTileZ + dz;
                     const backgroundTileZ: number = World3D.eyeTileZ - dz;
                     let tile: Tile | null;
@@ -1279,13 +1280,13 @@ export default class World3D {
             let deltaMaxTileZ: number;
             let deltaMaxTileX: number;
             if (occluder.type === 1) {
-                deltaMaxY = occluder.minTileX + 25 - World3D.eyeTileX;
+                deltaMaxY = occluder.minTileX + Plugins.DRAW_DISTANCE - World3D.eyeTileX;
                 if (deltaMaxY >= 0 && deltaMaxY <= 50) {
-                    deltaMinTileZ = occluder.minTileZ + 25 - World3D.eyeTileZ;
+                    deltaMinTileZ = occluder.minTileZ + Plugins.DRAW_DISTANCE - World3D.eyeTileZ;
                     if (deltaMinTileZ < 0) {
                         deltaMinTileZ = 0;
                     }
-                    deltaMaxTileZ = occluder.maxTileZ + 25 - World3D.eyeTileZ;
+                    deltaMaxTileZ = occluder.maxTileZ + Plugins.DRAW_DISTANCE - World3D.eyeTileZ;
                     if (deltaMaxTileZ > 50) {
                         deltaMaxTileZ = 50;
                     }
@@ -1315,13 +1316,13 @@ export default class World3D {
                     }
                 }
             } else if (occluder.type === 2) {
-                deltaMaxY = occluder.minTileZ + 25 - World3D.eyeTileZ;
+                deltaMaxY = occluder.minTileZ + Plugins.DRAW_DISTANCE - World3D.eyeTileZ;
                 if (deltaMaxY >= 0 && deltaMaxY <= 50) {
-                    deltaMinTileZ = occluder.minTileX + 25 - World3D.eyeTileX;
+                    deltaMinTileZ = occluder.minTileX + Plugins.DRAW_DISTANCE - World3D.eyeTileX;
                     if (deltaMinTileZ < 0) {
                         deltaMinTileZ = 0;
                     }
-                    deltaMaxTileZ = occluder.maxTileX + 25 - World3D.eyeTileX;
+                    deltaMaxTileZ = occluder.maxTileX + Plugins.DRAW_DISTANCE - World3D.eyeTileX;
                     if (deltaMaxTileZ > 50) {
                         deltaMaxTileZ = 50;
                     }
@@ -1353,20 +1354,20 @@ export default class World3D {
             } else if (occluder.type === 4) {
                 deltaMaxY = occluder.minY - World3D.eyeY;
                 if (deltaMaxY > 128) {
-                    deltaMinTileZ = occluder.minTileZ + 25 - World3D.eyeTileZ;
+                    deltaMinTileZ = occluder.minTileZ + Plugins.DRAW_DISTANCE - World3D.eyeTileZ;
                     if (deltaMinTileZ < 0) {
                         deltaMinTileZ = 0;
                     }
-                    deltaMaxTileZ = occluder.maxTileZ + 25 - World3D.eyeTileZ;
+                    deltaMaxTileZ = occluder.maxTileZ + Plugins.DRAW_DISTANCE - World3D.eyeTileZ;
                     if (deltaMaxTileZ > 50) {
                         deltaMaxTileZ = 50;
                     }
                     if (deltaMinTileZ <= deltaMaxTileZ) {
-                        let deltaMinTileX: number = occluder.minTileX + 25 - World3D.eyeTileX;
+                        let deltaMinTileX: number = occluder.minTileX + Plugins.DRAW_DISTANCE - World3D.eyeTileX;
                         if (deltaMinTileX < 0) {
                             deltaMinTileX = 0;
                         }
-                        deltaMaxTileX = occluder.maxTileX + 25 - World3D.eyeTileX;
+                        deltaMaxTileX = occluder.maxTileX + Plugins.DRAW_DISTANCE - World3D.eyeTileX;
                         if (deltaMaxTileX > 50) {
                             deltaMaxTileX = 50;
                         }

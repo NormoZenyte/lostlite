@@ -8,6 +8,7 @@ import AnimBase from './AnimBase';
 
 import Hashable from '../datastruct/Hashable';
 import {Int32Array2d, TypedArray1d} from '../util/Arrays';
+import Plugins from '../../plugin/Plugins';
 
 class Metadata {
     vertexCount: number = 0;
@@ -2044,7 +2045,7 @@ export default class Model extends Hashable {
         const radiusCosEyePitch: number = (this.radius * cosEyePitch) >> 16;
 
         const maxZ: number = midZ + radiusCosEyePitch;
-        if (maxZ <= 50 || midZ >= 3500) {
+        if (maxZ <= 50 || midZ >= Plugins.DRAW_DISTANCE * 140) {
             return;
         }
 

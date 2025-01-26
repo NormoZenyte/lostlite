@@ -69,6 +69,7 @@ import {Host, Peer} from './jagex2/io/RTCDataChannels';
 import {canvasContainer} from './jagex2/graphics/Canvas';
 import {Renderer} from './jagex2/renderer/Renderer';
 import {RendererWebGPU} from './jagex2/renderer/webgpu/RendererWebGPU';
+import Plugins from './plugin/Plugins';
 
 // noinspection JSSuspiciousNameCombination
 class Game extends Client {
@@ -1104,7 +1105,7 @@ class Game extends Client {
             this.idleTimeout--;
         }
 
-        for (let i: number = 0; i < 5 && (await this.read()); i++) {
+        for (let i: number = 0; i < Plugins.IN_PACKETS && (await this.read()); i++) {
             /* empty */
         }
 
@@ -1700,7 +1701,7 @@ class Game extends Client {
 
             const yaw: number = (this.orbitCameraYaw + this.cameraAnticheatAngle) & 0x7ff;
             if (this.localPlayer) {
-                this.orbitCamera(this.orbitCameraX, this.getHeightmapY(this.currentLevel, this.localPlayer.x, this.localPlayer.z) - 50, this.orbitCameraZ, yaw, pitch, pitch * 3 + 600);
+                this.orbitCamera(this.orbitCameraX, this.getHeightmapY(this.currentLevel, this.localPlayer.x, this.localPlayer.z) - 50, this.orbitCameraZ, yaw, pitch, pitch * Plugins.ZOOM + 600);
             }
 
             Client.cyclelogic2++;

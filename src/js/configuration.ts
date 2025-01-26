@@ -1,6 +1,7 @@
 import GameShell from './jagex2/client/GameShell';
 import {Client} from './client';
 import {downloadText, sleep} from './jagex2/util/JsUtil';
+import World from './jagex2/dash3d/World';
 
 type WorldList = {
     id: number;
@@ -62,7 +63,14 @@ function localConfiguration(): void {
 }
 
 async function liveConfiguration(secured: boolean): Promise<void> {
-    const world: WorldList = await getWorldInfo(secured, parseInt(GameShell.getParameter('world'), 10));
+    const world: WorldList = {
+        id: 1,
+        region: 'United States',
+        address: 'https://w1.225.2004scape.org',
+        portOffset: 0,
+        players: 0,
+        members: false
+    }; // await getWorldInfo(secured, parseInt(GameShell.getParameter('world'), 10));
     const url: URL = new URL(world.address);
 
     Client.nodeId = 10 + world.id - 1;
