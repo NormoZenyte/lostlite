@@ -2,7 +2,9 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [ main, feature/webgpu ]
+    branches:
+      - main
+      - feature/webgpu
 
 permissions:
   contents: write
