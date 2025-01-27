@@ -27,6 +27,7 @@ class UIManager {
     private canvasContainer: HTMLElement;
     private canvas: HTMLCanvasElement;
     private lootTrackerToggle: HTMLInputElement;
+    private xpTrackerToggle: HTMLInputElement;
 
     constructor(game: Game) {
         this.game = game;
@@ -42,6 +43,7 @@ class UIManager {
         this.canvasContainer = document.getElementById('canvas-container') as HTMLElement;
         this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
         this.lootTrackerToggle = document.getElementById('loot-tracker-toggle') as HTMLInputElement;
+        this.xpTrackerToggle = document.getElementById('xp-tracker-toggle') as HTMLInputElement;
 
         const load = async () => {
             await this.initializeToggles();
@@ -119,6 +121,21 @@ class UIManager {
         } else {
             if (lootTrackerTab) {
                 lootTrackerTab.style.display = 'none';
+            }
+        }
+
+        // Initialize XP tracker state
+        const xpTrackerTab = document.querySelector('.section-header[data-section="xp"]') as HTMLElement;
+        if (localStorage.getItem('xpTrackerEnabled') === 'true') {
+            this.xpTrackerToggle.checked = true;
+            this.xpTrackerToggle.closest('.plugin-item')?.classList.add('active');
+            Plugins.XP_TRACKER = true;
+            if (xpTrackerTab) {
+                xpTrackerTab.style.display = 'flex';
+            }
+        } else {
+            if (xpTrackerTab) {
+                xpTrackerTab.style.display = 'none';
             }
         }
     }
@@ -250,6 +267,34 @@ class UIManager {
                 listContainer?.classList.toggle('has-active-section', hasActiveSection);
             }
         }
+
+        if (this.xpTrackerToggle.checked) {
+            this.xpTrackerToggle.checked = false;
+            const pluginItem = this.xpTrackerToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.xpTrackerToggle.checked);
+            Plugins.XP_TRACKER = !Plugins.XP_TRACKER;
+
+            // Show/hide the XP tracker tab
+            const xpTrackerTab = document.querySelector('.section-header[data-section="xp"]') as HTMLElement;
+            if (xpTrackerTab) {
+                xpTrackerTab.style.display = this.xpTrackerToggle.checked ? 'flex' : 'none';
+            }
+
+            // If the XP tracker section is currently open and we're disabling it, close it
+            if (!this.xpTrackerToggle.checked) {
+                const xpTrackerSection = document.querySelector('.section-content[data-section="xp"]');
+                const xpTrackerHeader = document.querySelector('.section-header[data-section="xp"]');
+                xpTrackerSection?.classList.remove('expanded');
+                xpTrackerHeader?.classList.remove('active');
+                
+                // Update visibility of content wrapper
+                const contentWrapper = document.querySelector('.section-content-wrapper');
+                const listContainer = document.querySelector('.list-container');
+                const hasActiveSection = document.querySelector('.section-header.active') !== null;
+                contentWrapper?.classList.toggle('has-active-section', hasActiveSection);
+                listContainer?.classList.toggle('has-active-section', hasActiveSection);
+            }
+        }
     }
 
     async initializeToggles2(): Promise<void> {
@@ -313,35 +358,6 @@ class UIManager {
             }
         });
 
-        // Loot Tracker toggle
-        this.lootTrackerToggle.addEventListener('change', () => {
-            const pluginItem = this.lootTrackerToggle.closest('.plugin-item');
-            pluginItem?.classList.toggle('active', this.lootTrackerToggle.checked);
-            localStorage.setItem('lootTrackerEnabled', this.lootTrackerToggle.checked.toString());
-            Plugins.LOOT_TRACKER = this.lootTrackerToggle.checked;
-
-            // Show/hide the loot tracker tab
-            const lootTrackerTab = document.querySelector('.section-header[data-section="loot"]') as HTMLElement;
-            if (lootTrackerTab) {
-                lootTrackerTab.style.display = this.lootTrackerToggle.checked ? 'flex' : 'none';
-            }
-
-            // If the loot tracker section is currently open and we're disabling it, close it
-            if (!this.lootTrackerToggle.checked) {
-                const lootTrackerSection = document.querySelector('.section-content[data-section="loot"]');
-                const lootTrackerHeader = document.querySelector('.section-header[data-section="loot"]');
-                lootTrackerSection?.classList.remove('expanded');
-                lootTrackerHeader?.classList.remove('active');
-                
-                // Update visibility of content wrapper
-                const contentWrapper = document.querySelector('.section-content-wrapper');
-                const listContainer = document.querySelector('.list-container');
-                const hasActiveSection = document.querySelector('.section-header.active') !== null;
-                contentWrapper?.classList.toggle('has-active-section', hasActiveSection);
-                listContainer?.classList.toggle('has-active-section', hasActiveSection);
-            }
-        });
-
         // Initialize debug state
         if (localStorage.getItem('debugEnabled') === 'true') {
             this.debugToggle.checked = true;
@@ -380,6 +396,17 @@ class UIManager {
             const lootTrackerTab = document.querySelector('.section-header[data-section="loot"]') as HTMLElement;
             if (lootTrackerTab) {
                 lootTrackerTab.style.display = 'flex';
+            }
+        }
+
+        // Initialize XP tracker state
+        if (localStorage.getItem('xpTrackerEnabled') === 'true') {
+            this.xpTrackerToggle.checked = true;
+            this.xpTrackerToggle.closest('.plugin-item')?.classList.add('active');
+            Plugins.XP_TRACKER = true;
+            const xpTrackerTab = document.querySelector('.section-header[data-section="xp"]') as HTMLElement;
+            if (xpTrackerTab) {
+                xpTrackerTab.style.display = 'flex';
             }
         }
     }
@@ -461,6 +488,35 @@ class UIManager {
                 const lootTrackerHeader = document.querySelector('.section-header[data-section="loot"]');
                 lootTrackerSection?.classList.remove('expanded');
                 lootTrackerHeader?.classList.remove('active');
+                
+                // Update visibility of content wrapper
+                const contentWrapper = document.querySelector('.section-content-wrapper');
+                const listContainer = document.querySelector('.list-container');
+                const hasActiveSection = document.querySelector('.section-header.active') !== null;
+                contentWrapper?.classList.toggle('has-active-section', hasActiveSection);
+                listContainer?.classList.toggle('has-active-section', hasActiveSection);
+            }
+        });
+
+        // XP Tracker toggle
+        this.xpTrackerToggle.addEventListener('change', () => {
+            const pluginItem = this.xpTrackerToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.xpTrackerToggle.checked);
+            localStorage.setItem('xpTrackerEnabled', this.xpTrackerToggle.checked.toString());
+            Plugins.XP_TRACKER = this.xpTrackerToggle.checked;
+
+            // Show/hide the XP tracker tab
+            const xpTrackerTab = document.querySelector('.section-header[data-section="xp"]') as HTMLElement;
+            if (xpTrackerTab) {
+                xpTrackerTab.style.display = this.xpTrackerToggle.checked ? 'flex' : 'none';
+            }
+
+            // If the XP tracker section is currently open and we're disabling it, close it
+            if (!this.xpTrackerToggle.checked) {
+                const xpTrackerSection = document.querySelector('.section-content[data-section="xp"]');
+                const xpTrackerHeader = document.querySelector('.section-header[data-section="xp"]');
+                xpTrackerSection?.classList.remove('expanded');
+                xpTrackerHeader?.classList.remove('active');
                 
                 // Update visibility of content wrapper
                 const contentWrapper = document.querySelector('.section-content-wrapper');

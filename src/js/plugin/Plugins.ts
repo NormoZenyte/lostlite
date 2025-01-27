@@ -10,4 +10,5 @@ export default class Plugins {
     static HIDE_IP: boolean = false; // default false
     static AFK: boolean = false; // default false
     static LOOT_TRACKER: boolean = false; // default false
+    static XP_TRACKER: boolean = false; // default false
 }
