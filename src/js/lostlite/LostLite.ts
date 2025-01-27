@@ -26,6 +26,7 @@ class UIManager {
     private afkToggle: HTMLInputElement;
     private canvasContainer: HTMLElement;
     private canvas: HTMLCanvasElement;
+    private lootTrackerToggle: HTMLInputElement;
 
     constructor(game: Game) {
         this.game = game;
@@ -40,6 +41,7 @@ class UIManager {
         this.afkToggle = document.getElementById('afk-toggle') as HTMLInputElement;
         this.canvasContainer = document.getElementById('canvas-container') as HTMLElement;
         this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
+        this.lootTrackerToggle = document.getElementById('loot-tracker-toggle') as HTMLInputElement;
 
         const load = async () => {
             await this.initializeToggles();
@@ -84,22 +86,6 @@ class UIManager {
             await this.enableGPURenderer();
         }
 
-        // // Initialize debug state
-        // if (localStorage.getItem('debugEnabled') === 'true') {
-        //     this.debugToggle.checked = true;
-        //     this.debugToggle.closest('.plugin-item')?.classList.add('active');
-        // }
-
-        // // Initialize other toggle states
-        // if (localStorage.getItem('trueTileEnabled') === 'true') {
-        //     this.trueTileToggle.checked = true;
-        //     this.trueTileToggle.closest('.plugin-item')?.classList.add('active');
-        // }
-        // if (localStorage.getItem('tileMarkerEnabled') === 'true') {
-        //     this.tileMarkerToggle.checked = true;
-        //     this.tileMarkerToggle.closest('.plugin-item')?.classList.add('active');
-        // }
-
         // Initialize resizable state
         if (localStorage.getItem('resizableEnabled') === 'true') {
             this.resizableToggle.checked = true;
@@ -119,6 +105,21 @@ class UIManager {
             this.afkToggle.checked = true;
             this.afkToggle.closest('.plugin-item')?.classList.add('active');
             Plugins.AFK = true;
+        }
+
+        // Initialize loot tracker state
+        const lootTrackerTab = document.querySelector('.section-header[data-section="loot"]') as HTMLElement;
+        if (localStorage.getItem('lootTrackerEnabled') === 'true') {
+            this.lootTrackerToggle.checked = true;
+            this.lootTrackerToggle.closest('.plugin-item')?.classList.add('active');
+            Plugins.LOOT_TRACKER = true;
+            if (lootTrackerTab) {
+                lootTrackerTab.style.display = 'flex';
+            }
+        } else {
+            if (lootTrackerTab) {
+                lootTrackerTab.style.display = 'none';
+            }
         }
     }
 
@@ -221,6 +222,34 @@ class UIManager {
             pluginItem?.classList.toggle('active', this.tileMarkerToggle.checked);
             Plugins.SHOW_TILE_MARKERS = !Plugins.SHOW_TILE_MARKERS;
         }
+
+        if (this.lootTrackerToggle.checked) {
+            this.lootTrackerToggle.checked = false;
+            const pluginItem = this.lootTrackerToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.lootTrackerToggle.checked);
+            Plugins.LOOT_TRACKER = !Plugins.LOOT_TRACKER;
+
+            // Show/hide the loot tracker tab
+            const lootTrackerTab = document.querySelector('.section-header[data-section="loot"]') as HTMLElement;
+            if (lootTrackerTab) {
+                lootTrackerTab.style.display = this.lootTrackerToggle.checked ? 'flex' : 'none';
+            }
+
+            // If the loot tracker section is currently open and we're disabling it, close it
+            if (!this.lootTrackerToggle.checked) {
+                const lootTrackerSection = document.querySelector('.section-content[data-section="loot"]');
+                const lootTrackerHeader = document.querySelector('.section-header[data-section="loot"]');
+                lootTrackerSection?.classList.remove('expanded');
+                lootTrackerHeader?.classList.remove('active');
+                
+                // Update visibility of content wrapper
+                const contentWrapper = document.querySelector('.section-content-wrapper');
+                const listContainer = document.querySelector('.list-container');
+                const hasActiveSection = document.querySelector('.section-header.active') !== null;
+                contentWrapper?.classList.toggle('has-active-section', hasActiveSection);
+                listContainer?.classList.toggle('has-active-section', hasActiveSection);
+            }
+        }
     }
 
     async initializeToggles2(): Promise<void> {
@@ -284,6 +313,35 @@ class UIManager {
             }
         });
 
+        // Loot Tracker toggle
+        this.lootTrackerToggle.addEventListener('change', () => {
+            const pluginItem = this.lootTrackerToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.lootTrackerToggle.checked);
+            localStorage.setItem('lootTrackerEnabled', this.lootTrackerToggle.checked.toString());
+            Plugins.LOOT_TRACKER = this.lootTrackerToggle.checked;
+
+            // Show/hide the loot tracker tab
+            const lootTrackerTab = document.querySelector('.section-header[data-section="loot"]') as HTMLElement;
+            if (lootTrackerTab) {
+                lootTrackerTab.style.display = this.lootTrackerToggle.checked ? 'flex' : 'none';
+            }
+
+            // If the loot tracker section is currently open and we're disabling it, close it
+            if (!this.lootTrackerToggle.checked) {
+                const lootTrackerSection = document.querySelector('.section-content[data-section="loot"]');
+                const lootTrackerHeader = document.querySelector('.section-header[data-section="loot"]');
+                lootTrackerSection?.classList.remove('expanded');
+                lootTrackerHeader?.classList.remove('active');
+                
+                // Update visibility of content wrapper
+                const contentWrapper = document.querySelector('.section-content-wrapper');
+                const listContainer = document.querySelector('.list-container');
+                const hasActiveSection = document.querySelector('.section-header.active') !== null;
+                contentWrapper?.classList.toggle('has-active-section', hasActiveSection);
+                listContainer?.classList.toggle('has-active-section', hasActiveSection);
+            }
+        });
+
         // Initialize debug state
         if (localStorage.getItem('debugEnabled') === 'true') {
             this.debugToggle.checked = true;
@@ -312,6 +370,17 @@ class UIManager {
         if (localStorage.getItem('tileMarkerEnabled') === 'true') {
             this.tileMarkerToggle.checked = true;
             this.tileMarkerToggle.closest('.plugin-item')?.classList.add('active');
+        }
+
+        // Initialize loot tracker state
+        if (localStorage.getItem('lootTrackerEnabled') === 'true') {
+            this.lootTrackerToggle.checked = true;
+            this.lootTrackerToggle.closest('.plugin-item')?.classList.add('active');
+            Plugins.LOOT_TRACKER = true;
+            const lootTrackerTab = document.querySelector('.section-header[data-section="loot"]') as HTMLElement;
+            if (lootTrackerTab) {
+                lootTrackerTab.style.display = 'flex';
+            }
         }
     }
 
@@ -370,6 +439,35 @@ class UIManager {
         window.addEventListener('resize', () => {
             if (this.resizableToggle.checked) {
                 this.updateCanvasSize();
+            }
+        });
+
+        // Loot Tracker toggle
+        this.lootTrackerToggle.addEventListener('change', () => {
+            const pluginItem = this.lootTrackerToggle.closest('.plugin-item');
+            pluginItem?.classList.toggle('active', this.lootTrackerToggle.checked);
+            localStorage.setItem('lootTrackerEnabled', this.lootTrackerToggle.checked.toString());
+            Plugins.LOOT_TRACKER = this.lootTrackerToggle.checked;
+
+            // Show/hide the loot tracker tab
+            const lootTrackerTab = document.querySelector('.section-header[data-section="loot"]') as HTMLElement;
+            if (lootTrackerTab) {
+                lootTrackerTab.style.display = this.lootTrackerToggle.checked ? 'flex' : 'none';
+            }
+
+            // If the loot tracker section is currently open and we're disabling it, close it
+            if (!this.lootTrackerToggle.checked) {
+                const lootTrackerSection = document.querySelector('.section-content[data-section="loot"]');
+                const lootTrackerHeader = document.querySelector('.section-header[data-section="loot"]');
+                lootTrackerSection?.classList.remove('expanded');
+                lootTrackerHeader?.classList.remove('active');
+                
+                // Update visibility of content wrapper
+                const contentWrapper = document.querySelector('.section-content-wrapper');
+                const listContainer = document.querySelector('.list-container');
+                const hasActiveSection = document.querySelector('.section-header.active') !== null;
+                contentWrapper?.classList.toggle('has-active-section', hasActiveSection);
+                listContainer?.classList.toggle('has-active-section', hasActiveSection);
             }
         });
     }
