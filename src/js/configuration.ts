@@ -69,7 +69,7 @@ async function liveConfiguration(secured: boolean): Promise<void> {
         address: 'https://w1.225.2004scape.org',
         portOffset: 0,
         players: 0,
-        members: false
+        members: true
     }; // await getWorldInfo(secured, parseInt(GameShell.getParameter('world'), 10));
     const url: URL = new URL(world.address);
 
