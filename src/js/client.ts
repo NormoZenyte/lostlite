@@ -83,9 +83,10 @@ export abstract class Client extends GameShell {
     static oplogic8: number = 0;
     static oplogic9: number = 0;
 
-    public onLoginScreenLoaded: () => void = (): void => {};
+    public onLoginScreenLoaded: () => Promise<void> = async (): Promise<void> => {};
     public onWorldLoaded: () => Promise<void> = async (): Promise<void> => {};
-    public onTick: () => Promise<void> = async (): Promise<void> => {};
+    public onClientTick: () => Promise<void> = async (): Promise<void> => {};
+    public onUpdateStat: (stat: number, xp: number, level: number) => void = (): void => {};
     public onLogout: () => Promise<void> = async (): Promise<void> => {};
 
     static setHighMemory = (): void => {

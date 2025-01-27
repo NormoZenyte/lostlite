@@ -28,7 +28,7 @@ interface QueuedRenderPixMapCommand {
 
 export class RendererWebGPU extends Renderer {
     device: GPUDevice;
-    context: GPUCanvasContext;
+    context: GPUCanvasContext | RenderingContext;
 
     defaultSampler!: GPUSampler;
     samplerTextureGroupLayout!: GPUBindGroupLayout;
@@ -129,22 +129,23 @@ export class RendererWebGPU extends Renderer {
         canvas.style.height = '100%';
         container.appendChild(canvas);
 
-        const context: GPUCanvasContext | null = canvas.getContext('webgpu');
+        const context: GPUCanvasContext | RenderingContext | null = canvas.getContext('webgpu');
         if (!context) {
             canvas.remove();
             throw new Error('Could not create WebGPU context');
         }
         const presentationFormat: GPUTextureFormat = navigator.gpu.getPreferredCanvasFormat();
-        context.configure({
-            device,
-            format: presentationFormat,
-            alphaMode: 'opaque'
-        });
-
+        if (context instanceof GPUCanvasContext && 'configure' in context) {
+            context.configure({
+                device,
+                format: presentationFormat,
+                alphaMode: 'opaque'
+            });
+        }
         return new RendererWebGPU(canvas, device, context);
     }
 
-    constructor(canvas: HTMLCanvasElement, device: GPUDevice, context: GPUCanvasContext) {
+    constructor(canvas: HTMLCanvasElement, device: GPUDevice, context: GPUCanvasContext | RenderingContext) {
         super(canvas);
         this.device = device;
         this.context = context;
@@ -413,22 +414,24 @@ export class RendererWebGPU extends Renderer {
             ]
         });
 
-        this.frameRenderPassDescriptor = {
-            label: 'frame render pass',
-            colorAttachments: [
-                {
-                    view: this.context.getCurrentTexture().createView(),
-                    clearValue: {
-                        r: 0.0,
-                        g: 0.0,
-                        b: 0.0,
-                        a: 1.0
-                    },
-                    loadOp: 'load',
-                    storeOp: 'store'
-                }
-            ]
-        };
+        if ('getCurrentTexture' in this.context) {
+            this.frameRenderPassDescriptor = {
+                label: 'frame render pass',
+                colorAttachments: [
+                    {
+                        view: this.context.getCurrentTexture().createView(),
+                        clearValue: {
+                            r: 0.0,
+                            g: 0.0,
+                            b: 0.0,
+                            a: 1.0
+                        },
+                        loadOp: 'load',
+                        storeOp: 'store'
+                    }
+                ]
+            };
+        }
         this.renderPassDescriptor = {
             label: 'main render pass',
             colorAttachments: [
@@ -476,7 +479,9 @@ export class RendererWebGPU extends Renderer {
         this.mainPass.end();
 
         for (const colorAttachment of this.frameRenderPassDescriptor.colorAttachments) {
-            colorAttachment!.view = this.context.getCurrentTexture().createView();
+            if ('getCurrentTexture' in this.context) {
+                colorAttachment!.view = this.context.getCurrentTexture().createView();
+            }
         }
 
         const framePass: GPURenderPassEncoder = this.encoder.beginRenderPass(this.frameRenderPassDescriptor);

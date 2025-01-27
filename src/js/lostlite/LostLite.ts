@@ -4,7 +4,7 @@ import {Game} from '../game';
 import {Renderer} from '../jagex2/renderer/Renderer';
 import {RendererWebGPU} from '../jagex2/renderer/webgpu/RendererWebGPU';
 import {canvasContainer} from '../jagex2/graphics/Canvas';
-import Plugins from '../plugin/Plugins';
+import Plugins, {usePluginRegistry, PluginRegistryType} from '../plugin/Plugins';
 
 declare global {
     interface Window {
@@ -258,7 +258,7 @@ class UIManager {
                 const lootTrackerHeader = document.querySelector('.section-header[data-section="loot"]');
                 lootTrackerSection?.classList.remove('expanded');
                 lootTrackerHeader?.classList.remove('active');
-                
+
                 // Update visibility of content wrapper
                 const contentWrapper = document.querySelector('.section-content-wrapper');
                 const listContainer = document.querySelector('.list-container');
@@ -286,7 +286,7 @@ class UIManager {
                 const xpTrackerHeader = document.querySelector('.section-header[data-section="xp"]');
                 xpTrackerSection?.classList.remove('expanded');
                 xpTrackerHeader?.classList.remove('active');
-                
+
                 // Update visibility of content wrapper
                 const contentWrapper = document.querySelector('.section-content-wrapper');
                 const listContainer = document.querySelector('.list-container');
@@ -339,11 +339,7 @@ class UIManager {
             const pluginItem = this.nodragToggle.closest('.plugin-item');
             pluginItem?.classList.toggle('active', this.nodragToggle.checked);
             localStorage.setItem('nodragEnabled', this.nodragToggle.checked.toString());
-
-            if (this.game.ingame) {
-                this.game.chatTyped = '::nodrag';
-                this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
-            }
+            this.sendCommand('nodrag');
         });
 
         // Tile markers toggle
@@ -409,6 +405,14 @@ class UIManager {
                 xpTrackerTab.style.display = 'flex';
             }
         }
+    }
+
+    private sendCommand(command: string): void {
+        if (!this.game.ingame) {
+            return;
+        }
+        this.game.chatTyped = `::${command}`;
+        this.game.onkeydown(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter'}));
     }
 
     private async onGpuChange(): Promise<void> {
@@ -488,7 +492,7 @@ class UIManager {
                 const lootTrackerHeader = document.querySelector('.section-header[data-section="loot"]');
                 lootTrackerSection?.classList.remove('expanded');
                 lootTrackerHeader?.classList.remove('active');
-                
+
                 // Update visibility of content wrapper
                 const contentWrapper = document.querySelector('.section-content-wrapper');
                 const listContainer = document.querySelector('.list-container');
@@ -517,7 +521,7 @@ class UIManager {
                 const xpTrackerHeader = document.querySelector('.section-header[data-section="xp"]');
                 xpTrackerSection?.classList.remove('expanded');
                 xpTrackerHeader?.classList.remove('active');
-                
+
                 // Update visibility of content wrapper
                 const contentWrapper = document.querySelector('.section-content-wrapper');
                 const listContainer = document.querySelector('.list-container');
@@ -579,7 +583,7 @@ class UIManager {
                     // Close all other sections first
                     const allSectionContents = document.querySelectorAll('.section-content');
                     const allSectionHeaders = document.querySelectorAll('.section-header');
-                    allSectionContents.forEach((otherContent) => {
+                    allSectionContents.forEach(otherContent => {
                         if (otherContent !== content) {
                             otherContent.classList.remove('expanded');
                             const otherSectionId = otherContent.getAttribute('data-section');
@@ -588,7 +592,7 @@ class UIManager {
                             }
                         }
                     });
-                    allSectionHeaders.forEach((otherHeader) => {
+                    allSectionHeaders.forEach(otherHeader => {
                         if (otherHeader !== header) {
                             otherHeader.classList.remove('active');
                         }
@@ -618,7 +622,7 @@ class UIManager {
                     // Close all other sections first
                     const allSectionContents = document.querySelectorAll('.section-content');
                     const allSectionHeaders = document.querySelectorAll('.section-header');
-                    allSectionContents.forEach((otherContent) => {
+                    allSectionContents.forEach(otherContent => {
                         if (otherContent !== content) {
                             otherContent.classList.remove('expanded');
                             const otherSectionId = otherContent.getAttribute('data-section');
@@ -627,7 +631,7 @@ class UIManager {
                             }
                         }
                     });
-                    allSectionHeaders.forEach((otherHeader) => {
+                    allSectionHeaders.forEach(otherHeader => {
                         if (otherHeader !== header) {
                             otherHeader.classList.remove('active');
                         }
@@ -677,12 +681,13 @@ class UIManager {
 
 export const LostLite = async (): Promise<void> => {
     console.log(`Lost Lite Launching w/ user client - release #${Client.clientversion}`);
-
     // Initialize loading UI
     const loadingOverlay = document.querySelector('.loading-overlay') as HTMLElement;
     const loadingProgressBar = document.getElementById('loading-progress-bar') as HTMLElement;
     const loadingText = document.querySelector('.loading-text') as HTMLElement;
     let progress = 0;
+
+    const { loadedPlugins, loadPlugins }: PluginRegistryType = usePluginRegistry();
 
     const updateLoadingProgress = (text: string, newProgress: number) => {
         progress = newProgress;
@@ -694,21 +699,22 @@ export const LostLite = async (): Promise<void> => {
     try {
         // Setup configuration (33%)
         updateLoadingProgress('Setting up configuration...', 0);
-    await setupConfiguration();
+        await setupConfiguration();
         updateLoadingProgress('Configuration loaded', 33);
-    console.log('Configuration has been setup. Launching game.');
+        console.log('Configuration has been setup. Launching game.');
 
         // Initialize game (66%)
         updateLoadingProgress('Initializing game engine...', 33);
-    const game: Game = new Game();
+        const game: Game = new Game();
         updateLoadingProgress('Game engine initialized', 66);
-
-    let uiManager: UIManager | null = null;
+        let uiManager: UIManager | null = null;
 
         // Setup login screen (100%)
-    game.onLoginScreenLoaded = (): void => {
+        game.onLoginScreenLoaded = async (): Promise<void> => {
             updateLoadingProgress('Loading interface...', 66);
-        uiManager = new UIManager(game);
+            uiManager = new UIManager(game);
+            updateLoadingProgress('Loading plugins...', 75);
+            await loadPlugins(game);
             updateLoadingProgress('LostLite Loaded!', 100);
 
             // Hide loading overlay
@@ -719,21 +725,27 @@ export const LostLite = async (): Promise<void> => {
         };
 
         // World loading doesn't affect loading screen since it happens after login
-    game.onWorldLoaded = async (): Promise<void> => {
-        await uiManager?.initializeToggles2();
-        uiManager?.test();
-    };
+        game.onWorldLoaded = async (): Promise<void> => {
+            await uiManager?.initializeToggles2();
+            uiManager?.test();
+        };
 
-    game.onTick = async (): Promise<void> => {
-        const polled: (() => Promise<void>) | undefined = uiManager?.commands?.pop();
-        if (polled) {
-            await polled();
+        game.onClientTick = async (): Promise<void> => {
+            const polled: (() => Promise<void>) | undefined = uiManager?.commands?.pop();
+            if (polled) {
+                await polled();
+            }
+
+            loadedPlugins.forEach((plugin): void => plugin.onClientTick())
+        };
+
+        game.onLogout = async (): Promise<void> => {
+            uiManager?.onLogout();
+        };
+
+        game.onUpdateStat = (stat: number, xp: number, level: number): void => {
+            loadedPlugins.forEach((plugin): void => plugin.onUpdateStat(stat, xp, level))
         }
-    };
-
-    game.onLogout = async (): Promise<void> => {
-        uiManager?.onLogout();
-    };
 
         await game.run();
         console.log('Finished.');

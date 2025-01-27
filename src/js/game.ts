@@ -330,7 +330,7 @@ export class Game extends Client {
             World3D.init(512, 334, 500, 800, distance);
             WordFilter.unpack(wordenc);
             this.initializeLevelExperience();
-            this?.onLoginScreenLoaded();
+            await this?.onLoginScreenLoaded();
             // try {
             //     Renderer.renderer = await RendererWebGPU.init(canvasContainer, this.width, this.height);
             // } catch (e) {
@@ -347,7 +347,7 @@ export class Game extends Client {
             return;
         }
         this.loopCycle++;
-        await this.onTick();
+        await this.onClientTick();
         if (this.ingame) {
             await this.updateGame();
         } else {
@@ -6006,6 +6006,7 @@ export class Game extends Client {
                         this.skillBaseLevel[stat] = i + 2;
                     }
                 }
+                this.onUpdateStat(stat, xp, level);
                 this.packetType = -1;
                 return true;
             }
