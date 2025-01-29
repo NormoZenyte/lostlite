@@ -598,7 +598,7 @@ export default abstract class GameShell {
     }
 
     private onfocus = (e: FocusEvent): void => {
-        this.hasFocus = true; // mapview applet
+        this.hasFocus = true;
         this.redrawScreen = true;
         this.refresh();
 
@@ -608,7 +608,11 @@ export default abstract class GameShell {
     };
 
     private onblur = (e: FocusEvent): void => {
-        this.hasFocus = false; // mapview applet
+        this.hasFocus = false;
+        // CUSTOM: taken from later versions, releases all keys
+        for (let i: number = 0; i < 128; i++) {
+            this.actionKey[i] = 0;
+        }
 
         if (InputTracking.enabled) {
             InputTracking.focusLost();
