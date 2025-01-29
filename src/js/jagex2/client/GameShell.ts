@@ -228,9 +228,6 @@ export default abstract class GameShell {
 
             const time: number = performance.now();
 
-            if (this.redrawScreen) {
-                this.refresh();
-            }
             await this.draw();
 
             this.frameTime[this.fpos] = (performance.now() - time) / 1000;
