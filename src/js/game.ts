@@ -877,7 +877,7 @@ export class Game extends Client {
                 }
                 this.stream = new ClientWorkerStream(this.worker!, this.host!.uniqueId);
             } else {
-                this.stream = new ClientStream(await ClientStream.openSocket({host: Client.serverAddress, port: 43594 + Client.portOffset}));
+                this.stream = new ClientStream(await ClientStream.openSocket(Client.serverAddress));
             }
             await this.stream.readBytes(this.in.data, 0, 8);
             this.in.pos = 0;

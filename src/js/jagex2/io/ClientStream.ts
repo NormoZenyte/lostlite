@@ -17,13 +17,12 @@ export default class ClientStream {
     private closed: boolean = false;
     private ioerror: boolean = false;
 
-    static openSocket = async (socket: Socket): Promise<WebSocket> => {
+    static openSocket = async (socket: string): Promise<WebSocket> => {
         return await new Promise<WebSocket>((resolve, reject): void => {
-            const secured: boolean = socket.host.startsWith('https');
+            const secured: boolean = socket.startsWith('https');
             const protocol: string = secured ? 'wss' : 'ws';
-            const host: string = socket.host.substring(socket.host.indexOf('//') + 2);
-            const port: number = secured ? socket.port + 2 : socket.port + 1;
-            const ws: WebSocket = new WebSocket(`${protocol}://${host}:${port}`, 'binary');
+            const host: string = socket.substring(socket.indexOf('//') + 2);
+            const ws: WebSocket = new WebSocket(`${protocol}://${host}`, 'binary');
 
             ws.addEventListener('open', (): void => {
                 console.log('connection open!');

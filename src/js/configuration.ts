@@ -66,7 +66,7 @@ async function liveConfiguration(secured: boolean): Promise<void> {
     const world: WorldList = {
         id: 1,
         region: 'United States',
-        address: 'https://w1.225.2004scape.org',
+        address: 'https://w1-2004.lostcity.rs/',
         portOffset: 0,
         players: 0,
         members: true
