@@ -2263,7 +2263,11 @@ export default class Model extends Hashable {
                 if (Model.tmpDepthFaces) {
                     const faces: Int32Array = Model.tmpDepthFaces[depth];
                     for (let f: number = 0; f < count; f++) {
-                        this.drawFace(faces[f], wireframe);
+                        try {
+                            this.drawFace(faces[f], wireframe);
+                        } catch (e) {
+                            // chrome's V8 optimizer hates us
+                        }
                     }
                 }
             }
@@ -2409,7 +2413,11 @@ export default class Model extends Hashable {
                 const faces: Int32Array = Model.tmpPriorityFaces[priority];
 
                 for (let i: number = 0; i < count; i++) {
-                    this.drawFace(faces[i], wireframe);
+                    try {
+                        this.drawFace(faces[i], wireframe);
+                    } catch (e) {
+                        // chrome's V8 optimizer hates us
+                    }
                 }
             }
 
