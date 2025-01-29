@@ -4190,7 +4190,6 @@ export class Game extends Client {
                     }
 
                     if (this.viewportInterfaceId !== -1 && this.viewportInterfaceId === this.reportAbuseInterfaceID) {
-                        console.log('viewportInterfaceId');
                         if (key === 8 && this.reportAbuseInput.length > 0) {
                             this.reportAbuseInput = this.reportAbuseInput.substring(0, this.reportAbuseInput.length - 1);
                         }
@@ -4198,7 +4197,6 @@ export class Game extends Client {
                     }
 
                     if (this.showSocialInput) {
-                        console.log('showSocialInput');
                         if (key >= 32 && key <= 122 && this.socialInput.length < 80) {
                             this.socialInput = this.socialInput + String.fromCharCode(key);
                             this.redrawChatback = true;
@@ -4257,7 +4255,6 @@ export class Game extends Client {
                             }
                         }
                     } else if (this.chatbackInputOpen) {
-                        console.log('chatbackInputOpen');
                         if (key >= 48 && key <= 57 && this.chatbackInput.length < 10) {
                             this.chatbackInput = this.chatbackInput + String.fromCharCode(key);
                             this.redrawChatback = true;
@@ -4284,8 +4281,10 @@ export class Game extends Client {
                             this.redrawChatback = true;
                         }
                     } else if (this.chatInterfaceId === -1) {
-                        console.log('chatInterfaceId');
-                        if (key >= 32 && key <= 122 && this.chatTyped.length < 80) {
+                        // CUSTOM: the original client checked `key <= 122`
+                        // preventing the user from typing a few special symbols -
+                        // since we have debugprocs, and they should be called using ::~, we allow a few more
+                        if (key >= 32 && key <= 126 && this.chatTyped.length < 80) {
                             this.chatTyped = this.chatTyped + String.fromCharCode(key);
                             this.redrawChatback = true;
                         }
