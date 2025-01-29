@@ -1002,7 +1002,7 @@ export class Game extends Client {
                 Client.oplogic7 = 0;
                 Client.oplogic8 = 0;
                 Client.oplogic9 = 0;
-                this.prepareGameScreen();
+                await this.prepareGameScreen();
                 return;
             }
             if (reply === 3) {
@@ -4556,7 +4556,7 @@ export class Game extends Client {
         }
     };
 
-    private prepareGameScreen = (): void => {
+    private prepareGameScreen = async (): Promise<void> => {
         if (!this.areaChatback) {
             this.unloadTitle();
             this.drawArea = null;
@@ -4581,6 +4581,7 @@ export class Game extends Client {
             this.areaBackhmid1 = new PixMap(269, 66);
             this.redrawTitleBackground = true;
         }
+        await this?.onWorldLoaded();
     };
 
     private isFriend = (username: string | null): boolean => {
@@ -6072,7 +6073,6 @@ export class Game extends Client {
                     this.sceneState = 2;
                     World.levelBuilt = this.currentLevel;
                     this.buildScene();
-                    await this?.onWorldLoaded();
                 }
                 if (Client.lowMemory && this.sceneState === 2 && World.levelBuilt !== this.currentLevel) {
                     this.areaViewport?.bind();
