@@ -63,10 +63,11 @@ function localConfiguration(): void {
 }
 
 async function liveConfiguration(secured: boolean): Promise<void> {
+    const id: number = parseInt(GameShell.getParameter('world'), 10) ?? 1;
     const world: WorldList = {
-        id: 1,
+        id,
         region: 'United States',
-        address: 'https://w1-2004.lostcity.rs/',
+        address: `https://w${id}-2004.lostcity.rs/`,
         portOffset: 0,
         players: 0,
         members: true
