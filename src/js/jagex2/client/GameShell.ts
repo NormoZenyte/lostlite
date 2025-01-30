@@ -621,12 +621,24 @@ export default abstract class GameShell {
 
     private onwheel = (e: WheelEvent): void => {
         if (e.deltaY > 0) {
-            if (Plugins.ZOOM < 15) {
-                Plugins.ZOOM++;
+            if (this.insideMinimapArea()) {
+                if (Plugins.MINIMAP_ZOOM < 4) {
+                    Plugins.MINIMAP_ZOOM += 0.25;
+                }
+            } else {
+                if (Plugins.ZOOM < 15) {
+                    Plugins.ZOOM++;
+                }
             }
         } else {
-            if (Plugins.ZOOM > 0) {
-                Plugins.ZOOM--;
+            if (this.insideMinimapArea()) {
+                if (Plugins.MINIMAP_ZOOM > 1) {
+                    Plugins.MINIMAP_ZOOM -= 0.25;
+                }
+            } else {
+                if (Plugins.ZOOM > 0) {
+                    Plugins.ZOOM--;
+                }
             }
         }
     };
@@ -829,6 +841,16 @@ export default abstract class GameShell {
         const keywords: string[] = ['Capacitor'];
         return keywords.some((keyword: string): boolean => navigator.userAgent.includes(keyword));
     }
+
+    // this.areaMapback?.draw(561, 5);
+    private insideMinimapArea = (): boolean => {
+        // 512 x 334
+        const viewportAreaX1: number = 570;
+        const viewportAreaY1: number = 11;
+        const viewportAreaX2: number = viewportAreaX1 + 170;
+        const viewportAreaY2: number = viewportAreaY1 + 160;
+        return this.ingame && this.mouseX >= viewportAreaX1 && this.mouseX <= viewportAreaX2 && this.mouseY >= viewportAreaY1 && this.mouseY <= viewportAreaY2;
+    };
 
     private insideViewportArea = (): boolean => {
         // 512 x 334
