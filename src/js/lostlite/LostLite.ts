@@ -466,13 +466,6 @@ class UIManager {
             this.updateCanvasSize();
         });
 
-        // Window resize handler
-        window.addEventListener('resize', () => {
-            if (this.resizableToggle.checked) {
-                this.updateCanvasSize();
-            }
-        });
-
         // Loot Tracker toggle
         this.lootTrackerToggle.addEventListener('change', () => {
             const pluginItem = this.lootTrackerToggle.closest('.plugin-item');
@@ -704,9 +697,9 @@ export const LostLite = async (): Promise<void> => {
         console.log('Configuration has been setup. Launching game.');
 
         // Initialize game (66%)
-        updateLoadingProgress('Initializing game engine...', 33);
+        // updateLoadingProgress('Initializing game engine...', 33);
         const game: Game = new Game();
-        updateLoadingProgress('Game engine initialized', 66);
+        updateLoadingProgress('Game engine initializing...', 66);
         let uiManager: UIManager | null = null;
 
         // Setup login screen (100%)
