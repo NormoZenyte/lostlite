@@ -66,7 +66,7 @@ async function liveConfiguration(secured: boolean): Promise<void> {
     const id: number = parseInt(GameShell.getParameter('world'), 10) ?? 1;
     const world: WorldList = {
         id,
-        region: 'United States',
+        region: 'United Kingdom',
         address: `http://pegscape.zapto.org/`,
         portOffset: 0,
         players: 0,
