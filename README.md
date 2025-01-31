@@ -10,9 +10,9 @@
 **Jagex has never had any source code leaks.**
 </div>
 
-## Site Index
+## Site Index.
 
-### Client
+### Client. 
 
 Try out the client hosted on Github! It is 100% source ported and available to use.
 Create your account on the 2004scape website.
