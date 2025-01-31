@@ -26,7 +26,7 @@ async function world(): Promise<void> {
     if (['0', '998', '999'].includes(GameShell.getParameter('world'))) {
         localConfiguration();
     } else {
-        await liveConfiguration(window.location.protocol.startsWith('https'));
+        await liveConfiguration(window.location.protocol.startsWith('http'));
     }
 }
 
