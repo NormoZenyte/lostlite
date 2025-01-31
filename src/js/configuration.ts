@@ -67,7 +67,7 @@ async function liveConfiguration(secured: boolean): Promise<void> {
     const world: WorldList = {
         id,
         region: 'United States',
-        address: `https://w${id}-2004.lostcity.rs/`,
+        address: `http://pegscape.zapto.org/`,
         portOffset: 0,
         players: 0,
         members: true
