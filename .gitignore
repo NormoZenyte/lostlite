@@ -11,8 +11,8 @@ bz2.wasm
 
 public/data/players/
 
-# !/public/data/
-# !/public/LoginThread.js
-# !/public/worker.js
-# !/public/bzip2.wasm
-# !/public/rsmod-pathfinder.wasm
+!/public/data/
+!/public/LoginThread.js
+!/public/worker.js
+!/public/bzip2.wasm
+!/public/rsmod-pathfinder.wasm
